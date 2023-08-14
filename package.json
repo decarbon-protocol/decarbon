@@ -1,0 +1,23 @@
+{
+  "name": "hardhat-project",
+  "scripts": {
+    "start": "npx hardhat run scripts/index.ts",
+    "lint": "npx eslint . --fix"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.2.1",
+    "@typescript-eslint/parser": "^6.2.1",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.46.0",
+    "ethereum-waffle": "^4.0.10",
+    "hardhat": "^2.17.0",
+    "hardhat-deploy": "^0.11.34",
+    "hardhat-gas-reporter": "^1.0.9",
+    "solhint": "^3.4.1",
+    "solidity-coverage": "^0.8.4"
+  },
+  "dependencies": {
+    "axios": "^1.4.0"
+  }
+}
