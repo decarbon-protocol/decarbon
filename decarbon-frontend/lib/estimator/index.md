@@ -1,0 +1,1 @@
+Business logic of estimator (calculator) will be here (include interfaces, ... all stuff). Wrap with respective folders and export only 1 needed function called "estimateAddress(address)" and on-demand types
