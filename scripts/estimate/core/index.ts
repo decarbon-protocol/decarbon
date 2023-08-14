@@ -1,7 +1,7 @@
 /** Dependencies */
 
 /** Import functions */
-import calculate_x_y_factors from "./calculate_incentivization_factors_of_epoch";
+import calculate_x_y_factors_of_epoch from "./calculate_x_y_factors_of_epoch";
 
 /** Export functions */
-export { calculate_x_y_factors };
+export { calculate_x_y_factors_of_epoch };

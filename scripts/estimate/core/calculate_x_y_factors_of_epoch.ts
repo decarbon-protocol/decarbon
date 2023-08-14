@@ -7,7 +7,7 @@ import { get_total_validator_payout_of_epoch } from "../../aggregate/use_beaconc
  * @notice This function calculates the X and Y factor of the most recently finalized epoch
  * @param _epoch object of type 'Epoch'. See 'scripts/interfaces/Epoch' for more details
  */
-async function calculate_x_y_factors(_epoch: Epoch)
+async function calculate_x_y_factors_of_epoch(_epoch: Epoch)
 : Promise<Factors> {
     try {
         // Getting total (sum of) tx fee reward in 'epoch'
@@ -53,4 +53,4 @@ async function calculate_x_y_factors(_epoch: Epoch)
 //     console.log(err);
 // })
 
-export default calculate_x_y_factors;
+export default calculate_x_y_factors_of_epoch;
