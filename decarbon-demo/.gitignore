@@ -14,5 +14,5 @@ data/*
 # other files
 test.ts
 settings.json
-scripts/aggregate/archive
+scripts/archive
 test.json
