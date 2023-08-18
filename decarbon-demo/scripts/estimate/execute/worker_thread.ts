@@ -5,7 +5,7 @@ import { ethers } from "hardhat";
 import { Epoch } from "../../interfaces";
 import { get_total_eth_supply_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { get_avg_consumption_and_emission_of_epoch } from "../../aggregate/use_ccri_apis";
-import { constants } from "../../";
+import { constants } from "../../01_constants";
 import { log } from "../../utils";
 import fs from "fs";
 

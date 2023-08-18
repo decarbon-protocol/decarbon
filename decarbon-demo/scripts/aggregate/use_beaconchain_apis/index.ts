@@ -1,6 +1,6 @@
 /** Import dependencies */
 import { network } from "hardhat";
-import { network_config } from "../../";
+import { network_config } from "../../00_network_config";
 
 /** Import functions from this directory */
 import get_blocks_of_epoch from "./get_blocks_of_epoch";

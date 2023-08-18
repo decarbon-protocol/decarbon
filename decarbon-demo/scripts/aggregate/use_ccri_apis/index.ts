@@ -1,5 +1,5 @@
 /** Dependencies */
-import { network_config } from "../../";
+import { network_config } from "../../00_network_config";
 import { network } from "hardhat";
 
 /** Import functions from this directory*/
