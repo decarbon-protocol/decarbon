@@ -1,14 +1,15 @@
 /**
  * @dev Define a uniform type to temporarily store energy stats in 1 epoch of an Eth address before we push it to DB
+ * @notice all variables in the interface is calculated based on 1 epoch
  */
 interface IndividualEnergyStats {
-    ethBalance: bigint,
+    ethBalanceChange: bigint,
     epochNum: bigint,
-    pubKey: string,
+    address: string,
     txFeePaidInEpoch: bigint,
-    kWh: bigint,
-    kgCO2e: bigint
-    txCountInEpoch: number
+    kWh: number,
+    kgCO2e: number,
+    txMadeInEpoch: number,
 }
 
 export default IndividualEnergyStats;

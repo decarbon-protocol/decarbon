@@ -1,6 +1,11 @@
 import { network } from "hardhat";
 
-async function get_tx_info_from_tx_hash(txHash: string)
+/**
+ * 
+ * @param txHash transaction hash
+ * @returns Object that has infos about a transaction
+ */
+export default async function get_tx_info_from_tx_hash(txHash: string)
 : Promise<Record<string, any>> {
 	const response: Record<string, any>  = await network.provider.request({
 		method: "eth_getTransactionByHash",
@@ -17,5 +22,3 @@ async function get_tx_info_from_tx_hash(txHash: string)
 // }).catch((err: any) => {
 //     console.log(err);
 // })
-
-export default get_tx_info_from_tx_hash;

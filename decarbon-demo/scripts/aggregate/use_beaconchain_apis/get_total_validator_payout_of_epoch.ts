@@ -1,36 +1,34 @@
-import axios, { AxiosError, AxiosResponse} from "axios";
+import axios, { AxiosResponse} from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
 import { url } from ".";
 
 
-async function get_total_validator_payout_of_epoch(_epoch: Epoch)
-: Promise<bigint> {
-    try {
-        const epoch: bigint = _epoch.epochNum;
-        const prevEpoch = epoch - 1n;
-        let response: AxiosResponse = await axios.get(`${url}/epoch/${epoch}`);
-        const epochData: Record<string, any> = response.data.data;
-        const totalBalance: bigint = BigInt(epochData.totalvalidatorbalance);
+export default async function get_total_validator_payout_of_epoch(_epoch: Epoch)
+: Promise<Epoch> {
+	try {
+		const epoch: bigint = _epoch.epochNum;
+		const prevEpoch = epoch - 1n;
+		let response: AxiosResponse = await axios.get(`${url}/epoch/${epoch}`);
+		const epochData: Record<string, unknown> = response.data.data;
+		const totalBalance: bigint = BigInt(epochData.totalvalidatorbalance as number);
 
-        response = await axios.get(`${url}/epoch/${prevEpoch}`);
-        const prevEpochData = response.data.data;
-        const prevTotalBalance: bigint = BigInt(prevEpochData.totalvalidatorbalance);
-        const totalPayout: bigint = totalBalance - prevTotalBalance;
+		response = await axios.get(`${url}/epoch/${prevEpoch}`);
+		const prevEpochData = response.data.data;
+		const prevTotalBalance: bigint = BigInt(prevEpochData.totalvalidatorbalance);
+		const totalPayout: bigint = (totalBalance - prevTotalBalance) * BigInt(1e9); // convert from Gwei to wei;
 
-        // Finally
-        return totalPayout;
+		// Finally
+		_epoch.totalValidatorPayout = totalPayout;
+		return _epoch;
 
-    } catch (err: any) {
-        throw new Error(`get_total_validator_payout_of_epoch()^ Error: ${err}`)
-    }
+	} catch (err: unknown) {
+		throw new Error(`get_total_validator_payout_of_epoch()^ Error: ${err}`);
+	}
 }
 
 // Test
-// get_total_validator_payout_of_epoch(exampleEpoch).then((totalPayout: bigint) => {
-//     const epoch: bigint = exampleEpoch.epochNum;
-//     console.log(`Total validator payout of epoch ${epoch} = ${totalPayout}`);
-// }).catch((err: any) => {
+// get_total_validator_payout_of_epoch(exampleEpoch).then((epoch: Epoch) => {
+//     console.log(`Total validator payout of epoch ${epoch.epochNum} = ${epoch.totalValidatorPayout}`);
+// }).catch((err: unknown) => {
 //     console.log(err);
 // })
-
-export default get_total_validator_payout_of_epoch;

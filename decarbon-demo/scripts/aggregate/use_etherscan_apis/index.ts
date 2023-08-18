@@ -1,12 +1,14 @@
 /** Dependencies */
 import { network } from "hardhat";
-import { network_config } from "../../00_network_config";
+import { network_config } from "../../";
 
-/** Import functions */
+/** Import functions from this directory*/
 import get_total_tx_fee_reward_of_epoch from "./get_total_tx_fee_reward_of_epoch";
+import get_total_eth_supply_of_epoch from "./get_total_eth_supply_of_epoch";
 
-/** Export functions */
+/** Export functions from this directory*/
 export { get_total_tx_fee_reward_of_epoch };
+export { get_total_eth_supply_of_epoch };
 
 /** Export frequently used variables */
 const chainId = network.config.chainId ?? "";
@@ -24,4 +26,4 @@ if (apiKey == "") {
 	throw new Error(`Invalid API key: ${apiKey}`);
 }
 
-export { chainId, url, apiKey };
+export { url, apiKey };

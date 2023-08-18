@@ -7,6 +7,7 @@ interface Block {
     proposerIndex: bigint,
     blockHash: string,
     feeRecipient: string,
+    status: number, // 1: accepted, 2: missed, 3: orphaned
 
     txCount?: number,
     baseFeePerGas?: bigint,
