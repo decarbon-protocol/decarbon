@@ -1,6 +1,6 @@
 import { apiKey, url } from ".";
 import axios, { AxiosResponse } from "axios";
-import { NUM_MINUTES_IN_EPOCH } from "../../01_constants";
+import { constants } from "../../01_constants";
 import { Epoch, exampleEpoch } from "../../interfaces";
 import fs from "fs";
 
@@ -19,7 +19,7 @@ export default async function get_avg_consumption_and_emission_of_epoch(_epoch: 
 		// fs.writeFileSync("data/get_power.json", JSON.stringify(powerResponse.data, null, 4));
 		const powerEntries: Record<string, unknown>[] = powerResponse.data.entries;
 		const avgPower: number = powerEntries[powerEntries.length - 1].power as number; // daily avg. kilo-wattage power of network (kW)
-		const avgConsumption: number = avgPower * (NUM_MINUTES_IN_EPOCH / 60); // avg. consumption of network in 1 epoch (kWh)
+		const avgConsumption: number = avgPower * (constants.NUM_MINUTES_IN_EPOCH / 60); // avg. consumption of network in 1 epoch (kWh)
 
 		// get avg. emission of epoch
 		const emissionResponse: AxiosResponse = await axios.get(
@@ -41,8 +41,8 @@ export default async function get_avg_consumption_and_emission_of_epoch(_epoch: 
 }
 
 // Test
-// get`_avg_consumption_and_emission_of_epoch(exampleEpoch).then((epoch: Epoch) => {
-//     console.log(`Consumption: ${epoch.kWh} (kWh), Emission: ${epoch.kgCO2e} (kgCO2e)`);
+// get_avg_consumption_and_emission_of_epoch(exampleEpoch).then((epoch: Epoch) => {
+// 	console.log(`Consumption: ${epoch.kWh} (kWh), Emission: ${epoch.kgCO2e} (kgCO2e)`);
 // }).catch((err: unknown) => {
-//     console.log(err);
+// 	console.log(err);
 // });

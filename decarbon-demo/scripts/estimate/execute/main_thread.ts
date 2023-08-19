@@ -7,6 +7,7 @@ import { get_blocks_of_epoch } from "../../aggregate/use_beaconchain_apis";
 import { calculate_x_y_factors_of_epoch } from "../core";
 import { get_tx_fee_paid_and_balance_change_of_addresses_in_epoch } from "../../aggregate/use_json_rpc/";
 import { Worker, isMainThread } from "worker_threads";
+import { constants } from "../../01_constants";
 import { log } from "../../utils";
 import fs from "fs";
 
@@ -35,9 +36,9 @@ let isLocked: boolean = false;
  */
 async function confirm_finalization_of_epoch(_epoch: Epoch)
     : Promise<boolean> {
-    const epochResponse: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epochNum}`);
-    const epochStatus: boolean = epochResponse.data.data.finalized;
-    return epochStatus;
+	const epochResponse: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epochNum}`);
+	const epochStatus: boolean = epochResponse.data.data.finalized;
+	return epochStatus;
 }
 
 /**
@@ -46,47 +47,62 @@ async function confirm_finalization_of_epoch(_epoch: Epoch)
  * @returns an 'Epoch' object. See 'scripts/interfaces/Epoch.ts' for more details.
  */
 function deserializeEpoch(serializedEpoch: Record<string, unknown>): Epoch {
-    try {
-        const epoch: Epoch = { epochNum: -1n };
-        // for (const [key, value] of Object.entries(serializedEpoch)) {
-        //     if (value === undefined) {
-        //         throw new Error(`serializedEpoch.${key} is undefined`);
-        //     }
-        //     epoch[] = value;
-        // }
-        epoch.epochNum = BigInt(serializedEpoch.epochNum as number) ;
-        return epoch;
-    } catch (err: unknown) {
-        throw new Error(`deserializeEpoch()^ Error: ${err}`);
-    }
+	try {
+		const epoch: Epoch = { epochNum: -1n };
+		// for (const [key, value] of Object.entries(serializedEpoch)) {
+		//     if (value === undefined) {
+		//         throw new Error(`serializedEpoch.${key} is undefined`);
+		//     }
+		//     epoch[] = value;
+		// }
+		epoch.epochNum = serializedEpoch.epochNum as bigint;
+		epoch.finalized = serializedEpoch.finalized as boolean;
+        epoch.totalEthSupply = serializedEpoch.totalEthSupply as bigint;
+        epoch.kWh = serializedEpoch.kWh as number;
+        epoch.kgCO2e = serializedEpoch.kgCO2e as number;
+		return epoch;
+	} catch (err: unknown) {
+		throw new Error(`deserializeEpoch()^ Error: ${err}`);
+	}
 }
 
 /**
  * @notice Setup listener to handle epoch data sent from the worker thread
  */
 worker.on("message", (serializedEpoch: Record<string, unknown>) => {
-    queue.enqueue(deserializeEpoch(serializedEpoch));
-    log(`Received epoch ${queue.front()?.epochNum} from worker thread!`, logPath);
-    log(`Front of queue: ${queue.front()?.epochNum}`, logPath);
-    log(`Back of queue: ${queue.back()?.epochNum}`, logPath);
-    log(`Length of queue: ${queue.size()}`, logPath);
+	queue.enqueue(deserializeEpoch(serializedEpoch));
+	log(`Received epoch ${queue.front()?.epochNum} from worker thread!`, logPath);
+	log(`Front of queue: ${queue.front()?.epochNum}`, logPath);
+	log(`Back of queue: ${queue.back()?.epochNum}`, logPath);
+	log(`Length of queue: ${queue.size()}`, logPath);
+	log(queue.size() < 4 ? `Good news: ${(4 - queue.size()) * constants.NUM_MINUTES_IN_EPOCH} minutes left until epoch ${queue.front()?.epochNum} finalizes (〃￣︶￣)人(￣︶￣〃)` : "", logPath);
 });
 
-/**
- * @notice This function handle input data sent to this process (web app will send an address list to this process in order to invoke main() function).
- * @dev This function will invoke main() with {param: 'data'} if data's type is Array<string>
- */
-process.stdin.on("data", async (data: any) => {
-    try {
-        const dataString: string = data.toString().trim();
-        const dataArray: string[] = dataString.split('\n');
-        isLocked = true;
-        await main(dataArray);
-        isLocked = false;
-    } catch (err: unknown) {
-        console.error(`Process encountered error on receiving input data: ${err}`);
-    }
-})
+// /**
+//  * @notice This function handle input data sent to this process (web app will send an address list to this process in order to invoke main() function).
+//  * @dev This function will invoke main() with {param: 'data'} if data's type is Array<string>
+//  */
+// process.stdin.on("data", async (rawBuffer: unknown) => {
+// 	try {
+// 		if (!isLocked) {
+// 			const dataString: string = rawBuffer!.toString().trim();
+// 			const dataArray: string[] = dataString.split("\n");
+// 			console.log(`Thanks for giving me data :>, please confirm if this is what you sent me:\n${dataString}`);
+// 			isLocked = true;
+// 			console.log("Wait a minute let me calculate consumption/GHG emission for you...");
+// 			console.log(`You can see what I'm internally doing at ${logPath}.`);
+// 			console.log("I also asked my friend to help me keep track of the latest epoch, come check his work at data/logs/worker_thread.ts.log");
+// 			await main(dataArray).catch((err: any) => console.log(err));
+// 			console.log(`We're done! Come check the result at ${logPath}`);
+// 			isLocked = false;
+// 		}
+// 		else {
+// 			console.log("Thanks for the data but I'm busy right now, please come back soon!(^_^)");
+// 		}
+// 	} catch (err: unknown) {
+// 		console.error(`Process encountered error on receiving input data: ${err}`);
+// 	}
+// });
 
 /**
  * 
@@ -95,64 +111,73 @@ process.stdin.on("data", async (data: any) => {
  */
 async function estimate()
     : Promise<Map<string, IndividualEnergyStats>> {
-    try {
-        while (true) {
-            if (queue.size() >= 4) {
-                let finalizedEpoch: Epoch = queue.front()!;
-                const confirmation: boolean = await confirm_finalization_of_epoch(finalizedEpoch);
-                if (!confirmation) {
-                    log(`Epoch ${finalizedEpoch.epochNum}'s finalization status isn't confirmed`, logPath);
-                    continue;
-                }
-                else {
-                    // This will takes a long time to run, we can optimize it with multi-threading later
-                    log(`Epoch ${finalizedEpoch.epochNum}'s finalization status is confirmed!`, logPath);
-                    finalizedEpoch.finalized = true;
-                    finalizedEpoch = await get_blocks_of_epoch(finalizedEpoch);
-                    finalizedEpoch = await calculate_x_y_factors_of_epoch(finalizedEpoch);
-                    stats = await get_tx_fee_paid_and_balance_change_of_addresses_in_epoch(finalizedEpoch, stats);
+	try {
+		while (true) {
+			if (queue.size() >= 4) {
+				let finalizedEpoch: Epoch = queue.front()!;
+				const confirmation: boolean = await confirm_finalization_of_epoch(finalizedEpoch);
+				if (!confirmation) {
+					log(`Epoch ${finalizedEpoch.epochNum}'s finalization status isn't confirmed`, logPath);
+					continue;
+				}
+				else {
+					// This will takes a long time to run, we can optimize it with multi-threading later
+					log(`Epoch ${finalizedEpoch.epochNum}'s finalization status is confirmed!`, logPath);
+					finalizedEpoch.finalized = true;
+					finalizedEpoch = await get_blocks_of_epoch(finalizedEpoch);
+					finalizedEpoch = await calculate_x_y_factors_of_epoch(finalizedEpoch);
+					stats = await get_tx_fee_paid_and_balance_change_of_addresses_in_epoch(finalizedEpoch, stats);
 
-                    // Start calculating
-                    log("Start calculating consumption/emissions for individual addresses...", logPath);
-                    for (const [address, stat] of stats) {
-                        // This loop will be slow as well, we should optimize it later
-                        const individual__ethBalanceChange: number = parseFloat(ethers.formatEther(stat.ethBalanceChange));
-                        const network__totalEthSupply: number = parseFloat(ethers.formatEther(finalizedEpoch.totalEthSupply!));
-                        const weightedFactor1: number = finalizedEpoch.xFactor! * ((individual__ethBalanceChange > 0 ? individual__ethBalanceChange : 0) / network__totalEthSupply);
+					// Start calculating
+					log("Start calculating consumption/emissions for individual addresses...", logPath);
+					for (const [address, stat] of stats) {
+						// This loop will be slow as well, we should optimize it later
+						const individual__ethBalanceChange: number = parseFloat(ethers.formatEther(stat.ethBalanceChange));
+                        console.log(individual__ethBalanceChange);
+						const network__totalEthSupply: number = parseFloat(ethers.formatEther(finalizedEpoch.totalEthSupply!));
+                        console.log(network__totalEthSupply);
+						const weightedFactor1: number = finalizedEpoch.xFactor! * ((individual__ethBalanceChange > 0 ? individual__ethBalanceChange : 0) / network__totalEthSupply);
+                        console.log(weightedFactor1);
 
-                        const individual__txFeePaidInEpoch: number = parseFloat(ethers.formatEther(stat.txFeePaidInEpoch));
-                        const network__totalTxFee: number = parseFloat(ethers.formatEther(finalizedEpoch.totalTxFee!));
-                        const weightedFactor2: number = finalizedEpoch.yFactor! * (individual__txFeePaidInEpoch / network__totalTxFee);
+						const individual__txFeePaidInEpoch: number = parseFloat(ethers.formatEther(stat.txFeePaidInEpoch));
+                        console.log(individual__txFeePaidInEpoch);
+						const network__totalTxFee: number = parseFloat(ethers.formatEther(finalizedEpoch.totalTxFee!));
+                        console.log(network__totalTxFee);
+						const weightedFactor2: number = finalizedEpoch.yFactor! * (individual__txFeePaidInEpoch / network__totalTxFee);
+                        console.log(weightedFactor2)
 
-                        const proportion: number = weightedFactor1 + weightedFactor2;
-                        const individualConsumption: number = finalizedEpoch.kWh! * proportion;
-                        const individualEmission: number = finalizedEpoch.kgCO2e! * proportion;
+						const proportion: number = weightedFactor1 + weightedFactor2;
+                        console.log(proportion);
+						const individualConsumption: number = finalizedEpoch.kWh! * proportion;
+                        console.log(individualConsumption);
+						const individualEmission: number = finalizedEpoch.kgCO2e! * proportion;
+                        console.log(individualEmission);
 
-                        // Save results
-                        stat.kWh = individualConsumption;
-                        stat.kgCO2e = individualEmission;
-                    }
-                    log("Done!", logPath);
-                    queue.dequeue();
-                    break;
-                }
-            }
-            else {
-                log("Not enough epochs in queue to determine the status of epochs! Waiting 1 block before trying again...", logPath);
-                await new Promise<void>((resolve) => {
-                    ethers.provider.addListener("block", async (blockNumber: number | bigint) => {
-                        log(`New block created: ${blockNumber}`, logPath);
-                        await ethers.provider.removeAllListeners();
-                        resolve();
-                    });
-                });
-            }
-        }
-        // Finally
-        return stats;
-    } catch (err: unknown) {
-        throw new Error(`estimate()^ Error: ${err}`);
-    }
+						// Save results
+						stat.kWh = individualConsumption;
+						stat.kgCO2e = individualEmission;
+					}
+					log("Done!", logPath);
+					queue.dequeue();
+					break;
+				}
+			}
+			else {
+				// log("Not enough epochs in queue to determine the status of epochs! Waiting 1 block before trying again...", logPath);
+				await new Promise<void>((resolve) => {
+					ethers.provider.addListener("block", async (blockNumber: number | bigint) => {
+						log(`New block created: ${blockNumber}`, logPath);
+						await ethers.provider.removeAllListeners();
+						resolve();
+					});
+				});
+			}
+		}
+		// Finally
+		return stats;
+	} catch (err: unknown) {
+		throw new Error(`estimate()^ Error: ${err}`);
+	}
 }
 
 /**
@@ -161,40 +186,40 @@ async function estimate()
  */
 export default async function main(addressList: string[])
     : Promise<void> {
-    try {
-        if (isMainThread) {
-            // Estimate individual consumption and emissions for each entry in 'stats'.
-            //Note: all keys of 'stats' map must be lowercase.
-            addressList.forEach((address) => {
-                stats.set(address, {
-                    ethBalanceChange: 0n,
-                    epochNum: exampleEpoch.epochNum,
-                    address: address.toLowerCase(),
-                    txFeePaidInEpoch: 0n,
-                    kWh: 0,
-                    kgCO2e: 0,
-                    txMadeInEpoch: 0
-                });
-            });
-            stats = await estimate();
+	try {
+		if (isMainThread) {
+			// Estimate individual consumption and emissions for each entry in 'stats'.
+			//Note: all keys of 'stats' map must be lowercase.
+			addressList.forEach((address) => {
+				stats.set(address, {
+					ethBalanceChange: 0n,
+					epochNum: 0n,
+					address: address.toLowerCase(),
+					txFeePaidInEpoch: 0n,
+					kWh: 0,
+					kgCO2e: 0,
+					txMadeInEpoch: 0
+				});
+			});
+			stats = await estimate();
 
-            // Finally
-            log("Printing Results...\n----------------------------------------------------------------", logPath);
-            for (const [address, stat] of stats) {
-                log(`Address: ${stat.address}`, logPath);
-                log(`Tx made in epoch: ${stat.txMadeInEpoch}`, logPath);
-                log(`Tx fee paid in epoch: ${ethers.formatEther(stat.txFeePaidInEpoch.toString())} (ETH)`, logPath);
-                log(`Balance change in epoch: ${ethers.formatEther(stat.ethBalanceChange.toString())} (ETH)`, logPath);
-                log(`consumption: ${stat.kWh} (kWh)`, logPath);
-                log(`Emission: ${stat.kgCO2e} (kgCO2e)`, logPath);
-                log("\n----------------------------------------------------------------", logPath);
-            }
-        }
-        else { }
+			// Finally
+			log("Printing Results...\n----------------------------------------------------------------", logPath);
+			for (const [address, stat] of stats) {
+				log(`Address: ${stat.address}`, logPath);
+				log(`Tx made in epoch: ${stat.txMadeInEpoch}`, logPath);
+				log(`Tx fee paid in epoch: ${ethers.formatEther(stat.txFeePaidInEpoch.toString())} (ETH)`, logPath);
+				log(`Balance change in epoch: ${ethers.formatEther(stat.ethBalanceChange.toString())} (ETH)`, logPath);
+				log(`consumption: ${stat.kWh} (kWh)`, logPath);
+				log(`Emission: ${stat.kgCO2e} (kgCO2e)`, logPath);
+				log("\n----------------------------------------------------------------", logPath);
+			}
+		}
+		else { }
 
-    } catch (err: unknown) {
-        throw new Error(`main()^ Error: ${err}`);
-    }
+	} catch (err: unknown) {
+		throw new Error(`main()^ Error: ${err}`);
+	}
 }
 
 // Test
