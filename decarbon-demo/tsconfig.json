@@ -7,10 +7,7 @@
         "strict": true,
         "skipLibCheck": true,
         "resolveJsonModule": true,
-<<<<<<< Updated upstream
-=======
         "outDir": "./build",
->>>>>>> Stashed changes
     },
     "include": [
         "scripts/",
