@@ -1,4 +1,4 @@
-import { network } from "hardhat";
+import { provider } from "./index";
 
 /**
  * 
@@ -7,10 +7,10 @@ import { network } from "hardhat";
  */
 export default async function get_tx_info_from_tx_hash(txHash: string)
 : Promise<Record<string, any>> {
-	const response: Record<string, any>  = await network.provider.request({
-		method: "eth_getTransactionByHash",
-		params: [txHash]
-	}) as Record<string, any>;
+	const response: Record<string, any>  = await provider.send(
+		"eth_getTransactionByHash",
+		[txHash]
+	) as Record<string, any>;
 
 	return response;
 }

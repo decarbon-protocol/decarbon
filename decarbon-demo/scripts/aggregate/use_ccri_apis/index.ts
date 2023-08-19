@@ -1,6 +1,5 @@
 /** Dependencies */
-import { network_config } from "../../00_network_config";
-import { network } from "hardhat";
+import { network_config, DEFAULT_CHAIN_ID } from "../../00_network_config";
 
 /** Import functions from this directory*/
 import get_avg_consumption_and_emission_of_epoch from "./get_avg_consumption_and_emission_of_epoch";
@@ -9,8 +8,8 @@ import get_avg_consumption_and_emission_of_epoch from "./get_avg_consumption_and
 export { get_avg_consumption_and_emission_of_epoch };
 
 /** Export frequenly used variables */
-const chainId = network.config.chainId ?? "";
-if (chainId == "") {
+const chainId = process.env.CHAIN_ID ?? DEFAULT_CHAIN_ID;
+if (chainId === undefined) {
 	throw new Error(`Invalid chain Id: ${chainId}`);
 }
 

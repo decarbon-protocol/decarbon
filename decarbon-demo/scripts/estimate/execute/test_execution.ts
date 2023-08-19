@@ -42,33 +42,4 @@ async function test_execution() {
 	}
 }
 
-test_execution();
-
-// // test_execution().catch((err: Error) => {
-// // 	console.log(err);
-// // });
-// // console.log("hi");
-// process.stdin.on("data", (rawData) => {
-//     let data: string[] = rawData.toString().trim().split("\n");
-//     for (let i =0; i<data.length; i++) {
-//         data[i] = data[i].toUpperCase();
-//     }
-//     console.log(data.join("\n"));
-// })
-
-// // import {fork} from "child_process";
-// // console.log(process.cwd());
-// // const childProcess = fork("scripts/estimate/execute/main_thread.js");
-
-
-
-// // const sendData: string = mocks.join('\n');
-
-
-// // childProcess.stdin.write(sendData);
-// // childProcess.stdin.end();
-
-// // childProcess.stdout.on('data', (data) => {
-// //     const output = data.toString().trim();
-// //     console.log('Child Process Output: ', output);
-// // });
+test_execution().catch(err => console.log(err));

@@ -1,5 +1,5 @@
 import { Epoch, exampleEpoch, IndividualEnergyStats } from "../../interfaces";
-import { get_tx_of_block } from ".";
+import { get_tx_of_block } from "./";
 import { hex2Dec, log } from "../../utils";
 
 const logPath: string = "data/logs/get_tx_fee_paid_and_balance_change_of_addresses_in_epoch.ts.log";
@@ -63,7 +63,6 @@ export default async function get_tx_fee_paid_and_balance_change_of_addresses_in
     }
 }
 
-Array<string>
 // Test
 // let mocks: string[] = [
 //     // These are transaction senders

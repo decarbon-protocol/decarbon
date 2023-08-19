@@ -1,6 +1,7 @@
-### Run these commands to test estimator script
+### To test the estimator script, run commands:
 npm install
-npx hardhat run scripts/estimate/execute/test_execution.ts
+npx tsc
+node build/estimate/execute/test_execution.ts
 
 ### Then look at these log files:
 data/logs/main_thread.ts.log

@@ -1,4 +1,4 @@
-import { network } from "hardhat";
+import { provider } from "./index";
 
 /**
  * 
@@ -6,10 +6,10 @@ import { network } from "hardhat";
  * @returns object that has info of about the transaction (just like a transaction receipt)
  */
 export default async function get_tx_receipt_from_tx_hash(txHash: string): Promise<Record<string, unknown>> {
-	const response: Record<string, unknown>  = await network.provider.request({
-		method: "eth_getTransactionReceipt",
-		params: [txHash]
-	}) as Record<string, unknown>;
+	const response: Record<string, unknown>  = await provider.send(
+		"eth_getTransactionReceipt",
+		[txHash]
+	) as Record<string, unknown>;
 
 	return response;
 }

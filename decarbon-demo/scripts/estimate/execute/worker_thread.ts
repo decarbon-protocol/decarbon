@@ -1,7 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { url, apiKey } from "../../aggregate/use_beaconchain_apis";
 import { parentPort } from "worker_threads";
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
+import { provider } from "../../aggregate/use_json_rpc";
 import { Epoch } from "../../interfaces";
 import { get_total_eth_supply_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { get_avg_consumption_and_emission_of_epoch } from "../../aggregate/use_ccri_apis";
@@ -21,15 +22,15 @@ fs.writeFileSync(logPath, "");
 async function waitForBlock(targetNumber: bigint)
     : Promise<bigint> {
     return new Promise<bigint>((resolve, reject) => {
-        ethers.provider.addListener("block", async (blockNumber: number | bigint) => {
+        provider.addListener("block", async (blockNumber: number | bigint) => {
             log(`New block created: ${blockNumber}`, logPath);
             blockNumber = BigInt(blockNumber);
             if (blockNumber === targetNumber) {
-                await ethers.provider.removeAllListeners();
+                await provider.removeAllListeners();
                 resolve(blockNumber);
             }
             else if (blockNumber > targetNumber) {
-                await ethers.provider.removeAllListeners();
+                await provider.removeAllListeners();
                 reject(blockNumber);
             }
         });

@@ -1,4 +1,4 @@
-import { network } from "hardhat";
+import { provider } from "./";
 import { Block, exampleBlock } from "../../interfaces";
 import fs from "fs";
 
@@ -19,10 +19,10 @@ export default async function get_tx_of_block(_block: Block, txInfo: boolean = t
 		}
 
 		else {
-			const response: Record<string, unknown> = await network.provider.request({
-				method: "eth_getBlockByHash",
-				params: [_block.blockHash, txInfo]
-			}) as Record<string, unknown>;
+			const response: Record<string, unknown> = await provider.send(
+				"eth_getBlockByHash",
+				[_block.blockHash, txInfo]
+			) as Record<string, unknown>;
 			const transactions: Record<string, unknown>[] | string[]= response.transactions as Record<string, unknown>[] | string[];
 			if (write) {
 				fs.writeFileSync("data/get_tx_of_block.json", JSON.stringify(transactions));
@@ -31,7 +31,7 @@ export default async function get_tx_of_block(_block: Block, txInfo: boolean = t
 			// finally
 			return transactions;
 		}
-	} catch (err) {
+	} catch (err) { 
 		throw new Error(`get_tx_of_block()^: ${err}`);
 	}
 }

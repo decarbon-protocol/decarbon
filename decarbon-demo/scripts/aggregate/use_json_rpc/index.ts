@@ -1,6 +1,6 @@
 /** Dependencies */
-import { network } from "hardhat";
-import { network_config } from "../../00_network_config";
+import { network_config, DEFAULT_CHAIN_ID } from "../../00_network_config";
+import { ethers, providers } from "ethers";
 
 /** Import functions from this directory */
 import get_tx_of_block from "./get_tx_of_block";
@@ -15,14 +15,16 @@ export { get_tx_receipt_from_tx_hash };
 export { get_tx_fee_paid_and_balance_change_of_addresses_in_epoch };
 
 /** Export frequently used variables */
-const chainId = network.config.chainId ?? "";
-if (chainId == "") {
+const chainId: any = process.env.CHAIN_ID ?? DEFAULT_CHAIN_ID;
+if (chainId === undefined) {
 	throw new Error(`Invalid chain Id: ${chainId}`);
 }
 
-const url = network_config[chainId as keyof typeof network_config]["rpc_url"] ?? "";
+const url: any = network_config[chainId as keyof typeof network_config]["rpc_url"] ?? "";
 if (url == "") {
 	throw new Error(`Invalid URL: ${url}`);
 }
 
-export { url };
+const provider = new ethers.providers.JsonRpcProvider(url);
+
+export { url, provider };

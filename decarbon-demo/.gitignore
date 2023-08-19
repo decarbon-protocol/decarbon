@@ -1,16 +1,10 @@
 node_modules
-coverage
-coverage.json
 typechain
 typechain-types
-.env
 
-# Hardhat files
-cache
-artifacts
-
-# data
+# artifacts
 data/*
+build/*
 
 # other files
 test.ts

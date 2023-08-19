@@ -29,4 +29,5 @@ const network_config = {
 	},
 };
 
-export { network_config };
+const DEFAULT_CHAIN_ID: number = 1;
+export { network_config, DEFAULT_CHAIN_ID };

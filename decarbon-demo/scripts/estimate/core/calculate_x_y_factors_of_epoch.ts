@@ -1,4 +1,4 @@
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
 import { Epoch, exampleEpoch } from "../../interfaces";
 import { get_total_tx_fee_reward_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { get_total_validator_payout_of_epoch } from "../../aggregate/use_beaconchain_apis";
@@ -36,8 +36,8 @@ export default async function calculate_x_y_factors_of_epoch(_epoch: Epoch)
             throw new Error(`Unexpected: total tx fee >= total validator payout (${totalTxFee >= totalValidatorPayout})`);
         }
 
-        const dividend: number = parseFloat(ethers.formatEther(totalTxFee));
-        const divisor: number = parseFloat(ethers.formatEther(totalValidatorPayout));
+        const dividend: number = parseFloat(ethers.utils.formatEther(totalTxFee));
+        const divisor: number = parseFloat(ethers.utils.formatEther(totalValidatorPayout));
         const y: number = dividend / divisor;
         const x: number = 1 - y;
         _epoch.xFactor = x;

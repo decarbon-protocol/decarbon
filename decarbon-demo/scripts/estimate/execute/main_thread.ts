@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { url } from "../../aggregate/use_beaconchain_apis";
-import { ethers } from "hardhat";
+import { ethers } from "ethers";
+import { provider } from "../../aggregate/use_json_rpc/";
 import { Queue } from "../../classes";
 import { Epoch, exampleEpoch, IndividualEnergyStats } from "../../interfaces";
 import { get_blocks_of_epoch } from "../../aggregate/use_beaconchain_apis";
@@ -25,7 +26,7 @@ fs.writeFileSync(logPath, "");
  * isLocked: false if open to receiving input, true otherwise
  */
 const queue: Queue<Epoch> = new Queue<Epoch>();
-const worker: Worker = new Worker("./scripts/estimate/execute/worker_thread.ts");
+const worker: Worker = new Worker("./build/estimate/execute/worker_thread.js");
 let stats: Map<string, IndividualEnergyStats> = new Map<string, IndividualEnergyStats>();
 let isLocked: boolean = false;
 
@@ -132,26 +133,26 @@ async function estimate()
 					log("Start calculating consumption/emissions for individual addresses...", logPath);
 					for (const [address, stat] of stats) {
 						// This loop will be slow as well, we should optimize it later
-						const individual__ethBalanceChange: number = parseFloat(ethers.formatEther(stat.ethBalanceChange));
-                        console.log(individual__ethBalanceChange);
-						const network__totalEthSupply: number = parseFloat(ethers.formatEther(finalizedEpoch.totalEthSupply!));
-                        console.log(network__totalEthSupply);
+						const individual__ethBalanceChange: number = parseFloat(ethers.utils.formatEther(stat.ethBalanceChange));
+                        // console.log(individual__ethBalanceChange);
+						const network__totalEthSupply: number = parseFloat(ethers.utils.formatEther(finalizedEpoch.totalEthSupply!));
+                        // console.log(network__totalEthSupply);
 						const weightedFactor1: number = finalizedEpoch.xFactor! * ((individual__ethBalanceChange > 0 ? individual__ethBalanceChange : 0) / network__totalEthSupply);
-                        console.log(weightedFactor1);
+                        // console.log(weightedFactor1);
 
-						const individual__txFeePaidInEpoch: number = parseFloat(ethers.formatEther(stat.txFeePaidInEpoch));
-                        console.log(individual__txFeePaidInEpoch);
-						const network__totalTxFee: number = parseFloat(ethers.formatEther(finalizedEpoch.totalTxFee!));
-                        console.log(network__totalTxFee);
+						const individual__txFeePaidInEpoch: number = parseFloat(ethers.utils.formatEther(stat.txFeePaidInEpoch));
+                        // console.log(individual__txFeePaidInEpoch);
+						const network__totalTxFee: number = parseFloat(ethers.utils.formatEther(finalizedEpoch.totalTxFee!));
+                        // console.log(network__totalTxFee);
 						const weightedFactor2: number = finalizedEpoch.yFactor! * (individual__txFeePaidInEpoch / network__totalTxFee);
-                        console.log(weightedFactor2)
+                        // console.log(weightedFactor2)
 
 						const proportion: number = weightedFactor1 + weightedFactor2;
-                        console.log(proportion);
+                        // console.log(proportion);
 						const individualConsumption: number = finalizedEpoch.kWh! * proportion;
-                        console.log(individualConsumption);
+                        // console.log(individualConsumption);
 						const individualEmission: number = finalizedEpoch.kgCO2e! * proportion;
-                        console.log(individualEmission);
+                        // console.log(individualEmission);
 
 						// Save results
 						stat.kWh = individualConsumption;
@@ -165,9 +166,9 @@ async function estimate()
 			else {
 				// log("Not enough epochs in queue to determine the status of epochs! Waiting 1 block before trying again...", logPath);
 				await new Promise<void>((resolve) => {
-					ethers.provider.addListener("block", async (blockNumber: number | bigint) => {
+					provider.addListener("block", (blockNumber: number | bigint) => {
 						log(`New block created: ${blockNumber}`, logPath);
-						await ethers.provider.removeAllListeners();
+						provider.removeAllListeners();
 						resolve();
 					});
 				});
@@ -187,6 +188,7 @@ async function estimate()
 export default async function main(addressList: string[])
     : Promise<void> {
 	try {
+        console.log("I'm still runinnnnnnnj!"); 
 		if (isMainThread) {
 			// Estimate individual consumption and emissions for each entry in 'stats'.
 			//Note: all keys of 'stats' map must be lowercase.
@@ -208,8 +210,8 @@ export default async function main(addressList: string[])
 			for (const [address, stat] of stats) {
 				log(`Address: ${stat.address}`, logPath);
 				log(`Tx made in epoch: ${stat.txMadeInEpoch}`, logPath);
-				log(`Tx fee paid in epoch: ${ethers.formatEther(stat.txFeePaidInEpoch.toString())} (ETH)`, logPath);
-				log(`Balance change in epoch: ${ethers.formatEther(stat.ethBalanceChange.toString())} (ETH)`, logPath);
+				log(`Tx fee paid in epoch: ${ethers.utils.formatEther(stat.txFeePaidInEpoch.toString())} (ETH)`, logPath);
+				log(`Balance change in epoch: ${ethers.utils.formatEther(stat.ethBalanceChange.toString())} (ETH)`, logPath);
 				log(`consumption: ${stat.kWh} (kWh)`, logPath);
 				log(`Emission: ${stat.kgCO2e} (kgCO2e)`, logPath);
 				log("\n----------------------------------------------------------------", logPath);
