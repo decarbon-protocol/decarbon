@@ -1,6 +1,7 @@
 {
     "name": "decarbon-ts",
     "scripts": {
+        "estimator": "npx tsc && node build/estimate/execute/main_thread.js", 
         "start": "npx ts-node run scripts/index.ts",
         "lint": "npx eslint . --fix"
     },

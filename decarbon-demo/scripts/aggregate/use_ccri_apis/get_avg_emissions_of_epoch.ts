@@ -10,7 +10,7 @@ import fs from "fs";
  * @param _epoch Object of type Epoch. See 'scripts/interfaces/Epoch.ts' for more details
  * @returns the @param '_epoch' but with updated properties 'kWh' and 'kgCO2e'
  */
-export default async function get_avg_consumption_and_emission_of_epoch(_epoch: Epoch): Promise<Epoch> {
+export default async function get_avg_emissions_of_epoch(_epoch: Epoch): Promise<Epoch> {
 	try {
 		// get avg. consumption of epoch
 		const powerResponse: AxiosResponse = await axios.get(
@@ -31,7 +31,7 @@ export default async function get_avg_consumption_and_emission_of_epoch(_epoch: 
 		const avgEmission: number = avgCarbonIntensity * avgConsumption; // avg. carbon emission of network in 1 epoch (kgCO2e)
 
 		// Finally
-		_epoch.kWh = avgConsumption;
+		// _epoch.kWh = avgConsumption;
 		_epoch.kgCO2e = avgEmission;
 		return _epoch;
 
@@ -41,8 +41,8 @@ export default async function get_avg_consumption_and_emission_of_epoch(_epoch: 
 }
 
 // Test
-// get_avg_consumption_and_emission_of_epoch(exampleEpoch).then((epoch: Epoch) => {
-// 	console.log(`Consumption: ${epoch.kWh} (kWh), Emission: ${epoch.kgCO2e} (kgCO2e)`);
+// get_avg_emissions_of_epoch(exampleEpoch).then((epoch: Epoch) => {
+// 	console.log(`Emission: ${epoch.kgCO2e} (kgCO2e)`);
 // }).catch((err: unknown) => {
 // 	console.log(err);
 // });
