@@ -1,11 +1,8 @@
-<<<<<<< HEAD
-import { network_config } from "./00_network_config";
-import * as constants from "./01_constants";
+import express from 'express';
 
-export { constants };
-export { network_config };
-=======
-const express = require("express");
+import { PrismaClient } from '@prisma/client';
+
+const prisma = new PrismaClient();
 
 const app = express();
 const PORT = 4000;
@@ -14,10 +11,10 @@ app.listen(PORT, () => {
   console.log(`API listening on PORT ${PORT} `);
 });
 
-app.get("/", (req: any, res: any) => {
-  res.send("Hey this is my API running 🥳");
+app.get("/", async (req, res) => {
+  const blocks = await prisma.blocks.findMany();
+  res.send(blocks);
 });
 
 // Export the Express API
 module.exports = app;
->>>>>>> 5745cd1942e49889c11c6d38bf11e98a53bf084e
