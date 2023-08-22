@@ -19,7 +19,7 @@ export default async function get_total_eth_supply_of_epoch(_epoch: Epoch): Prom
 		// log(totalEthSupply, logPath);
         
 		// Finally
-		_epoch.totalEthSupply = totalEthSupply;
+		_epoch.total_eth_supply = totalEthSupply;
 		return _epoch;
 	} catch (err: unknown) {
 		throw new Error(`get_total_eth_supply()^ Error: ${err}`);

@@ -1,8 +1,12 @@
+<<<<<<< HEAD
 import express from 'express';
 
 import { PrismaClient } from '@prisma/client';
 
 const prisma = new PrismaClient();
+=======
+const express = require("express");
+>>>>>>> test
 
 const app = express();
 const PORT = 4000;

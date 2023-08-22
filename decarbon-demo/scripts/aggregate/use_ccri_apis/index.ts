@@ -2,10 +2,10 @@
 import { network_config, DEFAULT_CHAIN_ID } from "../../00_network_config";
 
 /** Import functions from this directory*/
-import get_avg_consumption_and_emission_of_epoch from "./get_avg_consumption_and_emission_of_epoch";
+import get_avg_emissions_of_epoch from "./get_avg_emissions_of_epoch";
 
 /** Export functions from this directory*/
-export { get_avg_consumption_and_emission_of_epoch };
+export { get_avg_emissions_of_epoch };
 
 /** Export frequenly used variables */
 const chainId = process.env.CHAIN_ID ?? DEFAULT_CHAIN_ID;

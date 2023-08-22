@@ -9,31 +9,38 @@ import { get_total_validator_payout_of_epoch } from "../../aggregate/use_beaconc
  * @returns the @param _epoch but with updated xFactor and yFactor values
  */
 export default async function calculate_x_y_factors_of_epoch(_epoch: Epoch)
-    : Promise<Epoch> {
+    : Promise<boolean> {
     try {
-        console.log(`Calculating x, y factors of epoch ${_epoch.epochNum}...`);
+        console.log(`\tCalculating x, y factors of epoch ${_epoch.epoch_number}...\n`);
 
         // Getting total (sum of) tx fee reward in 'epoch'
-        console.log(`->Getting total tx fee of epoch ${_epoch.epochNum}...`);
-        _epoch = await get_total_tx_fee_reward_of_epoch(_epoch);
-        const totalTxFee: bigint = _epoch.totalTxFee ?? 0n;
-        if (totalTxFee === 0n) {
-            throw new Error(`Total tx fee of epoch ${_epoch.epochNum} = 0`);
+        console.log(`\t\tGetting total tx fee of epoch ${_epoch.epoch_number}...`);
+        let success: boolean = await get_total_tx_fee_reward_of_epoch(_epoch);
+        if (!success) {
+            return false;
         }
-        console.log(`->Done! total tx fee = ${totalTxFee} (wei)\n`);
+        const totalTxFee: bigint = _epoch.total_tx_fee ?? 0n;
+        if (totalTxFee === 0n) {
+            throw new Error(`Total tx fee of epoch ${_epoch.epoch_number} = 0`);
+        }
+        console.log(`\t\tDone! total tx fee = ${totalTxFee} (wei)\n`);
 
         // Getting total (sum of) validator payout of 'epoch'
-        console.log(`->Getting total validator payout of epoch ${_epoch.epochNum}...`);
-        _epoch = await get_total_validator_payout_of_epoch(_epoch);
-        const totalValidatorPayout: bigint = _epoch.totalValidatorPayout!;
-        if (totalValidatorPayout === 0n) {
-            throw new Error(`Total validator payout of epoch ${_epoch.epochNum} = 0`);
+        console.log(`\t\tGetting total validator payout of epoch ${_epoch.epoch_number}...`);
+        success = await get_total_validator_payout_of_epoch(_epoch);
+        if (!success) {
+            return false;
         }
-        console.log(`->Done! Total validator of epch payout = ${totalValidatorPayout} (wei)\n`);
+        const totalValidatorPayout: bigint = _epoch.total_validator_payout!;
+        if (totalValidatorPayout <= 0n) {
+            console.error(`Total validator payout of epoch ${_epoch.epoch_number} = 0`);
+            return false;
+        }
+        console.log(`\t\tDone! Total validator payout = ${totalValidatorPayout} (wei)\n`);
 
-        // Calculate Incentivization Factors
         if (totalTxFee >= totalValidatorPayout) {
-            throw new Error(`Unexpected: total tx fee >= total validator payout (${totalTxFee >= totalValidatorPayout})`);
+            console.error(`Total tx fee >= total validator payout (${totalTxFee >= totalValidatorPayout})`);
+            return false;
         }
 
         const dividend: number = parseFloat(ethers.utils.formatEther(totalTxFee));
@@ -42,13 +49,13 @@ export default async function calculate_x_y_factors_of_epoch(_epoch: Epoch)
         const x: number = 1 - y;
         _epoch.xFactor = x;
         _epoch.yFactor = y;
-        console.log("dividend: ", dividend);
-        console.log("divisor: ", divisor);
-        console.log(`Done! Result = {X: ${_epoch.xFactor}, Y: ${_epoch.yFactor}}`);
+        console.log("\tdividend: ", dividend);
+        console.log("\tdivisor: ", divisor);
+        console.log(`\tDone! Result = {x factor: ${_epoch.xFactor}, y factor: ${_epoch.yFactor}}\n`);
 
-        // Finally
-        return _epoch;
-    } catch (err: unknown) {
+        // If everything was successful, return true
+        return true;
+    } catch (err) {
         throw new Error(`calculate_x_y_factors()^ Error: ${err}`);
     }
 }

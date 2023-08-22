@@ -1,34 +1,53 @@
-import axios, { AxiosResponse} from "axios";
+import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
-import { url } from ".";
+import { url } from "./";
+import { constants } from "../../01_constants";
+import { provider } from "../use_json_rpc";
 
 
 export default async function get_total_validator_payout_of_epoch(_epoch: Epoch)
-: Promise<Epoch> {
-	try {
-		const epoch: bigint = _epoch.epochNum;
-		const prevEpoch = epoch - 1n;
-		let response: AxiosResponse = await axios.get(`${url}/epoch/${epoch}`);
-		const epochData: Record<string, unknown> = response.data.data;
-		const totalBalance: bigint = BigInt(epochData.totalvalidatorbalance as number);
+    : Promise<boolean> {
+    let retryCount = 0;
+    const MAX_RETRY_ATTEMPTS = constants.NUM_BLOCKS_IN_EPOCH - 1;
+    while (retryCount < MAX_RETRY_ATTEMPTS) {
+        try {
+            const epochNumber: number = _epoch.epoch_number;
+            const prevEpochNumber = epochNumber - 1;
+            let response: AxiosResponse = await axios.get(`${url}/epoch/${epochNumber}`);
+            const epochData: Record<string, unknown> = response.data.data;
+            const totalBalance: bigint = BigInt(epochData.totalvalidatorbalance as number);
 
-		response = await axios.get(`${url}/epoch/${prevEpoch}`);
-		const prevEpochData = response.data.data;
-		const prevTotalBalance: bigint = BigInt(prevEpochData.totalvalidatorbalance);
-		const totalPayout: bigint = (totalBalance - prevTotalBalance) * BigInt(1e9); // convert from Gwei to wei;
+            response = await axios.get(`${url}/epoch/${prevEpochNumber}`);
+            const prevEpochData = response.data.data;
+            const prevTotalBalance: bigint = BigInt(prevEpochData.totalvalidatorbalance as number);
+            const totalPayout: bigint = (totalBalance - prevTotalBalance) * BigInt(1e9); // convert from Gwei to wei;
 
-		// Finally
-		_epoch.totalValidatorPayout = totalPayout;
-		return _epoch;
-
-	} catch (err: unknown) {
-		throw new Error(`get_total_validator_payout_of_epoch()^ Error: ${err}`);
-	}
+            // If successful, return true
+            _epoch.total_validator_payout = totalPayout;
+            return true;
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error(`\t\tServer error on attempt ${retryCount + 1}: `, err);
+                await new Promise(resolve => {
+                    provider.addListener("block", () => resolve);
+                })
+                retryCount++;
+                console.log('\t\tRetrying...');
+            }
+            else {
+                throw new Error(`get_total_validator_payout_of_epoch(): ${err}`);
+            }
+        }
+    }
+    console.error("\t\tMaximum retry attempts exceeded.");
+    return false;
 }
 
 // Test
-// get_total_validator_payout_of_epoch(exampleEpoch).then((epoch: Epoch) => {
-//     console.log(`Total validator payout of epoch ${epoch.epochNum} = ${epoch.totalValidatorPayout}`);
+// get_total_validator_payout_of_epoch(exampleEpoch).then((success) => {
+//     if (success) {
+//         console.log(`Total validator payout of epoch ${exampleEpoch.epoch_number} = ${exampleEpoch.total_validator_payout}`);
+//     }
 // }).catch((err: unknown) => {
 //     console.log(err);
 // })

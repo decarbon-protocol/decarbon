@@ -1,6 +1,9 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosResponse } from "axios";
 import { Block, Epoch, exampleEpoch } from "../../interfaces";
 import { url, apiKey } from ".";
+import { provider } from "../use_json_rpc";
+import { log } from "../../utils";
+import { constants } from "../../01_constants";
 
 /**
  * @notice This function collects info about blocks that are in an Ethereum epoch
@@ -8,43 +11,69 @@ import { url, apiKey } from ".";
  * @dev Each epoch, we only call this function once to aggregate the data of blocks in the most currently-finalized epoch. Then we pass that data as a parameter into other functions from other files in this use_beaconchain_apis_folder.
  * @returns the @param _epoch but with updated Epoch.blocks property
  */
-export default async function get_blocks_of_epoch(_epoch: Epoch): Promise<Epoch> {
-	try {
-		console.log(`Getting blocks of epoch ${_epoch.epochNum}...`);
-		// make http requests to get basic infos of blocks that are in '_epoch'
-		const response: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epochNum}/slots?apiKey=${apiKey}`);
-		const blocks: Block[] = [];
-		response.data.data.forEach((block: Record<string, unknown>) => {
-			if (block.exec_block_hash !== undefined) {
-				blocks.push({
-					// These are required properties
-					epochNum: BigInt(block.epoch as number),
-					blockNumber: BigInt(block.exec_block_number as number),
-					proposerIndex: BigInt(block.proposer as number),
-					blockHash: block.exec_block_hash as string,
-					feeRecipient: block.exec_fee_recipient as string,
-					status: block.status as number,
-					// These are optional properties, so comment them out to save energy
-					timestamp: BigInt(block.exec_timestamp as number),
-					gasUsed: BigInt(block.exec_gas_used as number),
-					baseFeePerGas: BigInt(block.exec_base_fee_per_gas as number),
-				});
-			}
-		});
-		console.log("Done!");
-        
-		// finally
-		_epoch.blocks = blocks;
-		return _epoch;
+export default async function get_blocks_of_epoch(_epoch: Epoch)
+: Promise<boolean> {
+    const MAX_RETRY_ATTEMPTS = constants.NUM_BLOCKS_IN_EPOCH - 1; // Maximum number of retry attempts
+    let retryCount = 0;
 
-	} catch (err) {
-		throw new Error("get_blocks_in_finalized_epoch()^ Error: " + err);
-	}
+    while (retryCount <= MAX_RETRY_ATTEMPTS) {
+        try {
+            console.log(`\tGetting blocks of epoch ${_epoch.epoch_number}...`);
+            const response: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epoch_number}/slots?apiKey=${apiKey}`);
+            const blocks: Block[] = [];
+            for (const block of response.data.data) {
+                if (block.exec_block_hash !== undefined) {
+                    blocks.push({
+                        epoch_number: block.epoch as number,
+                        block_number: block.exec_block_number as number,
+                        proposer_index: block.proposer as number,
+                        block_hash: block.exec_block_hash as string,
+                        fee_recipient: block.exec_fee_recipient as string,
+                        timestamp: block.exec_timestamp as number,
+                        gas_used: BigInt(block.exec_gas_used as number),
+                        gas_limit: BigInt(block.exec_gas_limit as number),
+                        parent_hash: block.exec_parent_hash as string,
+                        state_root: block.exec_state_root as string,
+                        logs_bloom: block.exec_logs_bloom as string,
+                        status: Number(block.status as string),
+                    });
+                }
+            }
+
+            console.log("\tDone!\n");
+            _epoch.blocks = blocks;
+            return true;
+
+        } catch (err) {
+            if (axios.isAxiosError(err)) {
+                console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
+                // Wait for 1 block before retrying
+                await new Promise(resolve => {
+                    provider.addListener("block", () => resolve)
+                });
+                retryCount++;
+                console.log('\t\tRetrying...');
+            }
+            else {
+                throw new Error(`get_blocks_of_epoch(): ${err}`);
+            }
+        }
+    }
+    // If exceed maximum retry attempts
+    console.error("\nMaximum retry attempts exceeded.");
+    return false;
 }
 
 // Test
-// get_blocks_of_epoch(exampleEpoch).then((epoch: Epoch) => {
-//     console.log(epoch);
-// }).catch((err) => {
-//     console.log(err);
-// })
+// get_blocks_of_epoch(exampleEpoch)
+//     .then((success) => {
+//         if (success) {
+//             console.log(exampleEpoch.blocks);
+//         }
+//         else {
+//             console.log("Could be server error");
+//         }
+//     })
+//     .catch((err) => {
+//         console.log(err);
+//     })
