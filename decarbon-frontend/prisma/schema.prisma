@@ -1,0 +1,155 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model blocks {
+  number            BigInt?
+  hash              String    @id
+  parent_hash       String?
+  nonce             String?
+  sha3_uncles       String?
+  logs_bloom        String?
+  transactions_root String?
+  state_root        String?
+  receipts_root     String?
+  miner             String?
+  difficulty        Decimal?  @db.Decimal(38, 0)
+  total_difficulty  Decimal?  @db.Decimal(38, 0)
+  size              BigInt?
+  extra_data        String?
+  gas_limit         BigInt?
+  gas_used          BigInt?
+  timestamp         DateTime? @db.Timestamp(6)
+  transaction_count BigInt?
+}
+
+model d_account {
+  account_id                                                BigInt         @default(autoincrement())
+  address                                                   String         @id
+  eth_sent                                                  Decimal?       @db.Decimal(38, 0)
+  eth_received                                              Decimal?       @db.Decimal(38, 0)
+  account_balance                                           Decimal?       @db.Decimal(38, 0)
+  f_blockchain_f_blockchain_account_from_addressTod_account f_blockchain[] @relation("f_blockchain_account_from_addressTod_account") @ignore
+  f_blockchain_f_blockchain_account_to_addressTod_account   f_blockchain[] @relation("f_blockchain_account_to_addressTod_account") @ignore
+}
+
+model d_block {
+  block_id          BigInt         @id @default(autoincrement())
+  timestamp         DateTime?      @db.Timestamp(6)
+  number            BigInt?
+  hash              String?
+  parent_hash       String?
+  sha3_uncles       String?
+  logs_bloom        String?
+  transactions_root String?
+  state_root        String?
+  receipts_root     String?
+  proposer_index    String?
+  difficulty        Decimal?       @db.Decimal(38, 0)
+  total_difficulty  Decimal?       @db.Decimal(38, 0)
+  size              BigInt?
+  extra_data        String?
+  gas_limit         BigInt?
+  gas_used          BigInt?
+  transaction_count BigInt?
+  f_blockchain      f_blockchain[] @ignore
+}
+
+model d_date {
+  date         DateTime       @id @db.Date
+  year         Int?
+  month        Int?
+  day          Int?
+  weekday      Int?
+  day_in_chars String?
+  week         Int?
+  f_blockchain f_blockchain[] @ignore
+}
+
+model d_time {
+  time         DateTime       @id @db.Time(6)
+  hours        Int?
+  minutes      Int?
+  seconds      Int?
+  f_blockchain f_blockchain[] @ignore
+}
+
+model d_transaction {
+  transaction_id              BigInt         @id @default(autoincrement())
+  hash                        String?
+  nonce                       BigInt?
+  transaction_index           BigInt?
+  from_address                String?
+  to_address                  String?
+  value                       Decimal?       @db.Decimal(38, 0)
+  gas                         BigInt?
+  gas_price                   BigInt?
+  input                       String?
+  receipt_cumulative_gas_used BigInt?
+  receipt_gas_used            BigInt?
+  receipt_contract_address    String?
+  receipt_status              BigInt?
+  block_timestamp             DateTime?      @db.Timestamp(6)
+  block_number                BigInt?
+  block_hash                  String?
+  emissionByTransaction       BigInt?
+  emissionByBalance           BigInt?
+  f_blockchain                f_blockchain[] @ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model f_blockchain {
+  block_id                                               BigInt
+  transaction_id                                         BigInt
+  account_from_address                                   String
+  account_to_address                                     String
+  date                                                   DateTime      @db.Date
+  time                                                   DateTime      @db.Time(6)
+  d_transaction                                          d_transaction @relation(fields: [transaction_id], references: [transaction_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_Transaction")
+  d_account_f_blockchain_account_from_addressTod_account d_account     @relation("f_blockchain_account_from_addressTod_account", fields: [account_from_address], references: [address], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_account_from")
+  d_account_f_blockchain_account_to_addressTod_account   d_account     @relation("f_blockchain_account_to_addressTod_account", fields: [account_to_address], references: [address], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_account_to")
+  d_block                                                d_block       @relation(fields: [block_id], references: [block_id], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_block")
+  d_date                                                 d_date        @relation(fields: [date], references: [date], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_date")
+  d_time                                                 d_time        @relation(fields: [time], references: [time], onDelete: NoAction, onUpdate: NoAction, map: "fk_d_time")
+
+  @@ignore
+}
+
+model token_transfers {
+  token_address    String?
+  from_address     String?
+  to_address       String?
+  value            Decimal?  @db.Decimal(88, 0)
+  transaction_hash String
+  log_index        BigInt
+  block_timestamp  DateTime? @db.Timestamp(6)
+  block_number     BigInt?
+  block_hash       String?
+
+  @@id([transaction_hash, log_index])
+}
+
+model transactions {
+  hash                        String    @id
+  nonce                       BigInt?
+  transaction_index           BigInt?
+  from_address                String?
+  to_address                  String?
+  value                       Decimal?  @db.Decimal(38, 0)
+  gas                         BigInt?
+  gas_price                   BigInt?
+  input                       String?
+  receipt_cumulative_gas_used BigInt?
+  receipt_gas_used            BigInt?
+  receipt_contract_address    String?
+  receipt_root                String?
+  receipt_status              BigInt?
+  block_timestamp             DateTime? @db.Timestamp(6)
+  block_number                BigInt?
+  block_hash                  String?
+}
