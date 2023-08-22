@@ -6,7 +6,10 @@
     "dev": "next dev",
     "build": "prisma generate && next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "db:pull-from-db": "prisma db pull",
+    "db:push-to-db": "prisma generate",
+    "db:migrate": "prisma db execute --file ./script.sql"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.2.0",
