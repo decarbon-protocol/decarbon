@@ -45,7 +45,11 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
         if (!success) {
             return false;
         }
-        await calculate_x_y_factors_of_epoch(_epoch);
+        success = await calculate_x_y_factors_of_epoch(_epoch);
+        if (!success) {
+            return false;
+        }
+
         if (
             _epoch.total_tx_fee === undefined ||
             _epoch.total_eth_supply === undefined ||
@@ -161,7 +165,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
         }
 
         // console.log(_transactionList);
-        // log(JSON.stringify(_transactionList, null, 4), logPath);
+        // log(JSON.stringify(_transac tionList, null, 4), logPath);
         console.log("Done!");
 
         return true;
