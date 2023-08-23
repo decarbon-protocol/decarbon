@@ -6,7 +6,6 @@ import { get_tx_from_hashes } from "../../aggregate/use_json_rpc";
 import fs from "fs";
 import { calculate_x_y_factors_of_epoch } from "../../estimate/core";
 import { get_blocks_of_epoch } from "../../aggregate/use_beaconchain_apis/";
-import { resolveProperties } from "ethers/lib/utils";
 
 const logPath: string = "data/logs/transactionList.json";
 const transactionReceiptsPath: string = "data/logs/transactionReceipts.json";
@@ -78,8 +77,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
             }
 
             if (
-                transactionReceipts === null || transactionResponses === null
-                // transactionReceipts === undefined || transactionResponses === undefined
+                transactionReceipts === undefined || transactionResponses === undefined
             ) {
                 console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
                 return false;
@@ -92,8 +90,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 
             for (let j = 0; j < transactionReceipts.length; j++) {
                 if (
-                    transactionResponses[j] == null || transactionReceipts[j] == null
-                    // transactionResponses[j] === undefined || transactionReceipts[j] === undefined
+                    transactionReceipts[j] === null || transactionReceipts[j] === undefined 
                 ) {
                     continue;
                 }
@@ -141,13 +138,13 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
                     if (_addressToAccount.has(transaction__sender)) {
                         let currentValues = _addressToAccount.get(transaction__sender);
                         currentValues!.eth_sent += transaction__ethBalanceChange;
-                        currentValues!.account_balance -= transaction__ethBalanceChange; //  This doesn't necessarily reflects the true balance of an address
+                        // currentValues!.account_balance -= transaction__ethBalanceChange; //  This doesn't necessarily reflects the true balance of an address
                     }
 
                     if (_addressToAccount.has(transaction__receiver)) {
                         let currentValues = _addressToAccount.get(transaction__receiver);
                         currentValues!.eth_received += transaction__ethBalanceChange;
-                        currentValues!.account_balance += transaction__ethBalanceChange; // This doesn't necessarily reflects the true balance of an address
+                        // currentValues!.account_balance += transaction__ethBalanceChange; // This doesn't necessarily reflects the true balance of an address
                     }
                 }
             }
@@ -217,7 +214,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 // }
 
 // // Epoch number value could e be set to a custom value for testing
-// exampleEpoch.epoch_number = 223825;
+// exampleEpoch.epoch_number = 223869;
 // calculate_emissions_of_transactions_in_epoch(exampleEpoch, transactionList, addressToAccount, true)
 //     .then(() => {
 //         console.log(`Successfully calculated emissions for transactions in epoch ${exampleEpoch.epoch_number}!`);

@@ -72,10 +72,10 @@ worker.on("message", (serializedEpoch: Record<string, unknown>) => {
 
 export default async function main()
     : Promise<void> {
-    let oldestEpoch: Epoch = queue.front()!;
     try {
         while (true) {
             if (queue.size() >= 4) {
+                let oldestEpoch: Epoch = queue.front()!;
                 const confirmed: boolean = await confirm_finalization_of_epoch(oldestEpoch);
                 if (!confirmed) {
                     log(`Epoch ${oldestEpoch.epoch_number}'s finalization status isn't confirmed`, logPath);
@@ -131,7 +131,7 @@ export default async function main()
     }
     finally {
         provider.removeAllListeners("block");
-        console.log(`Finished processing epoch ${oldestEpoch.epoch_number}\n`);
+        console.log(`Finished processing epoch\n`);
     }
 }
 

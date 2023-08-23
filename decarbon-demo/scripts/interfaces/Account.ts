@@ -6,5 +6,5 @@ export default interface Account {
     address: string,
     eth_sent: bigint, // wei
     eth_received: bigint, // wei
-    account_balance: bigint // wei
+    // account_balance: bigint // wei
 }

@@ -16,7 +16,7 @@ export default async function fetch_accounts_from_db(_addressToAccount: Map<stri
                 address: row.address,
                 eth_received: utils.parseEther(row.eth_received!.toString()).toBigInt(),
                 eth_sent: utils.parseEther(row.eth_sent!.toString()).toBigInt(),
-                account_balance: utils.parseEther(row.account_balance!.toString()).toBigInt(),
+                // account_balance: utils.parseEther(row.account_balance!.toString()).toBigInt(),
             };
             _addressToAccount.set(row.address as string, account); // Update the Map directly
         });
