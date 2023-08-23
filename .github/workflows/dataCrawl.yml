@@ -16,6 +16,7 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ~
+            killall node
             rm -rf production
             mkdir production
             cd production
