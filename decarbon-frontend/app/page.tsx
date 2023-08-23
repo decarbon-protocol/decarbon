@@ -64,7 +64,7 @@ export default function Home() {
           </form>
         </Form>
       </Card>
-      <Card className="p-4">Your result goes here</Card>
+      <Card className="p-4">Your result goes here!</Card>
     </main>
   );
 }
