@@ -31,9 +31,9 @@ model blocks {
 model d_account {
   account_id                                                BigInt         @default(autoincrement())
   address                                                   String         @id
-  eth_sent                                                  Decimal?       @db.Decimal(38, 0)
-  eth_received                                              Decimal?       @db.Decimal(38, 0)
-  account_balance                                           Decimal?       @db.Decimal(38, 0)
+  eth_sent                                                  Float?       
+  eth_received                                              Float?       
+  account_balance                                           Float?
   f_blockchain_f_blockchain_account_from_addressTod_account f_blockchain[] @relation("f_blockchain_account_from_addressTod_account") @ignore
   f_blockchain_f_blockchain_account_to_addressTod_account   f_blockchain[] @relation("f_blockchain_account_to_addressTod_account") @ignore
 }
@@ -97,8 +97,8 @@ model d_transaction {
   block_timestamp             DateTime?      @db.Timestamp(6)
   block_number                BigInt?
   block_hash                  String?
-  emissionByTransaction       BigInt?
-  emissionByBalance           BigInt?
+  emission_by_transaction     Float?
+  emission_by_balance         Float?
   f_blockchain                f_blockchain[] @ignore
 }
 

@@ -64,5 +64,5 @@ const exampleAccount = {
  */
 export { Block, exampleBlock };
 export { Epoch, exampleEpoch };
-export { Transaction };
+export { Transaction, exampleTransaction };
 export { Account, exampleAccount };

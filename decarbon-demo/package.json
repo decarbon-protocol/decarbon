@@ -1,17 +1,11 @@
 {
     "name": "decarbon-ts",
     "scripts": {
-<<<<<<< HEAD
-        "start": "ts-node scripts/index.ts",
         "lint": "npx eslint . --fix",
         "db:pull-from-db": "prisma db pull",
         "db:push-to-db": "prisma generate",
-        "db:migrate": "prisma db execute --file ./script.sql"
-=======
-        "estimator": "npx tsc && node build/estimate/execute/main_thread.js", 
-        "start": "npx ts-node run scripts/index.ts",
-        "lint": "npx eslint . --fix"
->>>>>>> test
+        "db:migrate": "prisma db execute --file ./script.sql",
+        "start-estimator": "mkdir -p data/logs && mkdir -p build && npx tsc && node build/estimate/execute/main_thread.js"
     },
     "devDependencies": {
         "@types/express": "^4.17.17",
@@ -27,7 +21,6 @@
         "axios": "^1.4.0",
         "ethers": "^5.7.0",
         "express": "^4.18.2",
-        "pg": "^8.11.3",
         "prisma": "^5.1.1"
     }
 }

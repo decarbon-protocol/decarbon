@@ -7,11 +7,11 @@ import { Epoch } from "../../interfaces";
 import { get_total_eth_supply_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { constants } from "../../01_constants";
 import { get_avg_emissions_of_epoch } from "../../aggregate/use_ccri_apis";
-import { log } from "../../utils";
+import { clearLog, log } from "../../utils";
 import fs from "fs";
 
-const logPath: string = "data/logs/worker_thread.ts.log";
-fs.writeFileSync(logPath, "");
+const logPath: string = "data/logs/worker_thread.log";
+clearLog(logPath);
 
 /**
  * 

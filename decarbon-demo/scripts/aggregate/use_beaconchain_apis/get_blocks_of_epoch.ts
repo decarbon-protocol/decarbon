@@ -22,7 +22,8 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
             const response: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epoch_number}/slots?apiKey=${apiKey}`);
             const blocks: Block[] = [];
             for (const block of response.data.data) {
-                if (block.exec_block_hash !== undefined) {
+                const blockStatus: number = Number(block.status as string);
+                if (blockStatus !== 2 && blockStatus !== 3) {
                     blocks.push({
                         epoch_number: block.epoch as number,
                         block_number: block.exec_block_number as number,
@@ -35,13 +36,13 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
                         parent_hash: block.exec_parent_hash as string,
                         state_root: block.exec_state_root as string,
                         logs_bloom: block.exec_logs_bloom as string,
-                        status: Number(block.status as string),
+                        status: blockStatus,
                     });
                 }
             }
 
-            console.log("\tDone!\n");
             _epoch.blocks = blocks;
+            console.log("\tDone!\n");
             return true;
 
         } catch (err) {
