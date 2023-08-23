@@ -22,7 +22,7 @@ export default async function get_total_tx_fee_reward_of_epoch(_epoch: Epoch)
             let retryCount = 0;
             while (retryCount <= MAX_RETRY_ATTEMPTS) {
                 try {
-                    rewardResponse = await axios.get(`${url}/?module=block&action=getblockreward&blockno=${block.block_number}&apikey=${apiKey}`);
+                    rewardResponse = await axios.get(`${url}/?module=block&action=getblockreward&blockno=${block.number}&apikey=${apiKey}`);
                     break;
                 } catch (err) {
                     if (axios.isAxiosError(err)) {
@@ -33,7 +33,7 @@ export default async function get_total_tx_fee_reward_of_epoch(_epoch: Epoch)
                 }
             }
             if (retryCount > MAX_RETRY_ATTEMPTS) {
-                console.error(`Failed to get block reward for block ${block.block_number} due to provider's server error`);
+                console.error(`Failed to get block reward for block ${block.number} due to provider's server error`);
                 return false;
             }
             else {

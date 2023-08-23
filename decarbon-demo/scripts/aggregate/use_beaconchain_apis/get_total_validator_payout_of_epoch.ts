@@ -29,7 +29,7 @@ export default async function get_total_validator_payout_of_epoch(_epoch: Epoch)
             if (axios.isAxiosError(err)) {
                 console.error(`\t\tServer error on attempt ${retryCount + 1}: `, err);
                 await new Promise(resolve => {
-                    provider.addListener("block", () => resolve);
+                    setTimeout(resolve, 12 * 1000);
                 })
                 retryCount++;
                 console.log('\t\tRetrying...');

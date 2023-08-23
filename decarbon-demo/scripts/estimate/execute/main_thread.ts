@@ -8,6 +8,7 @@ import { fetch_accounts_from_db, insert_transactions, update_account_data } from
 import { Worker, isMainThread } from "worker_threads";
 import { constants } from "../../01_constants";
 import { clearLog, log } from "../../utils";
+import insert_blocks from "../../database/insert_blocks";
 
 /**
  * @notice set the path of log file and clear the log file
@@ -102,15 +103,27 @@ export default async function main()
                     }
 
                     // If the calculation was successful, we save results to the database
-                    success = await insert_transactions(transactionList);
+                    success = await update_account_data(addressToAccount);
                     if (!success) {
                         log(`Failed to update transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
                         continue;
                     }
 
-                    success = await update_account_data(addressToAccount);
+                    success = await insert_blocks(oldestEpoch.blocks!);
                     if (!success) {
-                        log(`Failed to update transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        log(`Failed to insert new blocks into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath)
+                        log(`Reverting changes done to db`, logPath);
+                        // Revert account changes above
+
+                        continue;
+                    }
+
+                    success = await insert_transactions(transactionList);
+                    if (!success) {
+                        log(`Failed to insert new transactions into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        log(`Reverting changes done to db`, logPath);
+                        // Revert new blocks added above
+
                         continue;
                     }
                 }
@@ -120,7 +133,6 @@ export default async function main()
                 await new Promise<void>((resolve) => {
                     provider.addListener("block", (blockNumber: number) => {
                         // log(`New block created: ${blockNumber}`, logPath);
-                        provider.removeListener("block", () => { console.log("removed") });
                         resolve();
                     });
                 });

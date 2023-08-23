@@ -1,4 +1,4 @@
-import axios from 'axios';
+import axios, { AxiosError } from 'axios';
 import { provider, url } from ".";
 
 export default async function get_tx_from_hashes(transactionHashes: string[])
@@ -28,13 +28,15 @@ export default async function get_tx_from_hashes(transactionHashes: string[])
         } catch (err) {
             if (axios.isAxiosError(err)) {
                 console.error(`Server error on attempt ${retryCount + 1}:`, err);
-                await new Promise(resolve => {
-                    provider.addListener("block", () => resolve);
+                await new Promise<void>(resolve => {
+                    setTimeout(resolve, 12 * 1000);
                 });
                 retryCount++;
                 console.log("Retrying...");
             }
-            throw new Error(`get_tx_from_hashes(): ${err}`);
+            else {
+                throw new Error(`get_tx_from_hashes(): ${err}`);
+            }
         }
     }
     // If maximum attempts exceeded, print out error and don't return anything

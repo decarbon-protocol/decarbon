@@ -62,25 +62,34 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
         const all__yFactor: number = _epoch.yFactor!;
         const all__emissions: number = _epoch.kgCO2e!;
 
-        const epoch__firstBlockNumber: number = _epoch.blocks[0].block_number;
+        const epoch__firstBlockNumber: number = _epoch.blocks[0].number;
         for (let i = 0; i < _epoch.blocks!.length; i++) {
             success = await get_tx_of_block(_epoch.blocks![i], false);
             if (!success) {
                 return false;
             }
 
-            const [transactionReceipts, transactionResponses] = await get_tx_from_hashes(_epoch.blocks![i].tx_hashes!) as [Record<string, string | boolean | []>[], Record<string, string | boolean | []>[]];
+            let transactionReceipts;
+            let transactionResponses;
+            const data = await get_tx_from_hashes(_epoch.blocks![i].tx_hashes!) as [Record<string, string | boolean | []>[], Record<string, string | boolean | []>[]];
+            if (data !== undefined) {
+                if (Array.isArray(data) && data.length === 2) {
+                    transactionReceipts = data[0];
+                    transactionResponses = data[1];
+                }
+                else {
+                    console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                    return false;
+                }
+            }
+            else {
+                console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                return false;
+            }
 
             if (debug) {
                 fs.writeFileSync(transactionReceiptsPath, JSON.stringify(transactionReceipts, null, 4), 'utf-8');
                 fs.writeFileSync(transactionResponsesPath, JSON.stringify(transactionResponses, null, 4), 'utf-8');
-            }
-
-            if (
-                transactionReceipts === undefined || transactionResponses === undefined
-            ) {
-                console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
-                return false;
             }
 
             if (transactionResponses.length != transactionReceipts.length) {
@@ -90,7 +99,8 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 
             for (let j = 0; j < transactionReceipts.length; j++) {
                 if (
-                    transactionReceipts[j] === null || transactionReceipts[j] === undefined 
+                    transactionReceipts[j] === null || transactionReceipts[j] === undefined ||
+                    transactionResponses[j] === null || transactionResponses[j] === undefined
                 ) {
                     continue;
                 }
@@ -151,7 +161,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
         }
 
         // console.log(_transactionList);
-        log(JSON.stringify(_transactionList, null, 4), logPath);
+        // log(JSON.stringify(_transactionList, null, 4), logPath);
         console.log("Done!");
 
         return true;
@@ -209,17 +219,18 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 //         address: address,
 //         eth_sent: BigInt(eth_sent),
 //         eth_received: BigInt(eth_receive),
-//         account_balance: BigInt(account_balace_in_eth)
+//         // account_balance: BigInt(account_balace_in_eth)
 //     });
 // }
 
 // // Epoch number value could e be set to a custom value for testing
-// exampleEpoch.epoch_number = 223869;
+// exampleEpoch.epoch_number = 223874;
 // calculate_emissions_of_transactions_in_epoch(exampleEpoch, transactionList, addressToAccount, true)
-//     .then(() => {
-//         console.log(`Successfully calculated emissions for transactions in epoch ${exampleEpoch.epoch_number}!`);
+//     .then((success) => {
+//         if (success) {
+//             console.log(`Successfully calculated emissions for transactions in epoch ${exampleEpoch.epoch_number}!`);
+//         }
 //     })
 //     .catch(err => {
 //         console.log(err);
-//         console.log(`Failed to calculate emissions for transactions in epoch ${exampleEpoch.epoch_number}!`);
 //     }) 

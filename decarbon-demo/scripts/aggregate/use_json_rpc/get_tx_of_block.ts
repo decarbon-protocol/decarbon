@@ -2,7 +2,6 @@ import { provider } from "./";
 import { Block, exampleBlock } from "../../interfaces";
 import fs from "fs";
 import axios from "axios";
-import { resolveProperties } from "ethers/lib/utils";
 
 /**
  * 
@@ -25,7 +24,7 @@ export default async function get_tx_of_block(_block: Block, txResponse: boolean
         try {
             const response: Record<string, unknown> = await provider.send(
                 "eth_getBlockByHash",
-                [_block.block_hash, txResponse]
+                [_block.hash, txResponse]
             ) as Record<string, unknown>;
             const transactions: Record<string, unknown>[] | string[] = response.transactions as Record<string, unknown>[] | string[];
             if (write) {
@@ -45,7 +44,7 @@ export default async function get_tx_of_block(_block: Block, txResponse: boolean
             if (axios.isAxiosError(err)) {
                 console.error(`\t\tServer error on attempt ${retryCount + 1}`);
                 await new Promise(resolve => {
-                    provider.addListener("block", () => resolve);
+                    setTimeout(resolve, 5000 * 1000);
                 })
                 retryCount++;
                 console.log("Retrying...");

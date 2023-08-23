@@ -8,10 +8,10 @@ import Transaction from "./Transaction";
  * @dev Import this in other files and use it as a mock object for testing
  */
 const exampleBlock: Block = {
-    block_number: 17891407,
+    number: 17891407,
     epoch_number: 221171,
     proposer_index: 122222,
-    block_hash: "0x3ae9a488f920980a7ecb9f6d64541bf6783adf005ec34c2be3dea84924cdab9e",
+    hash: "0x3ae9a488f920980a7ecb9f6d64541bf6783adf005ec34c2be3dea84924cdab9e",
     fee_recipient: "0x8d0d35169cc73b5a9a2e5dabf794615cea019487",
     status: 1, // 1: accepted, 2: missed, 3: orphaned
     transaction_count: 181,

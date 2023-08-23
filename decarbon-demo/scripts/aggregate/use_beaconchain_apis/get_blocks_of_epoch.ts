@@ -26,9 +26,9 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
                 if (blockStatus !== 2 && blockStatus !== 3) {
                     blocks.push({
                         epoch_number: block.epoch as number,
-                        block_number: block.exec_block_number as number,
+                        number: block.exec_block_number as number,
                         proposer_index: block.proposer as number,
-                        block_hash: block.exec_block_hash as string,
+                        hash: block.exec_block_hash as string,
                         fee_recipient: block.exec_fee_recipient as string,
                         timestamp: block.exec_timestamp as number,
                         gas_used: BigInt(block.exec_gas_used as number),
@@ -36,6 +36,7 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
                         parent_hash: block.exec_parent_hash as string,
                         state_root: block.exec_state_root as string,
                         logs_bloom: block.exec_logs_bloom as string,
+                        transaction_count: block.exec_transactions_count as number,
                         status: blockStatus,
                     });
                 }
@@ -49,8 +50,8 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
             if (axios.isAxiosError(err)) {
                 console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
                 // Wait for 1 block before retrying
-                await new Promise(resolve => {
-                    provider.addListener("block", () => resolve)
+                await new Promise<void>(resolve => {
+                    setTimeout(resolve, 12 * 1000);
                 });
                 retryCount++;
                 console.log('\t\tRetrying...');

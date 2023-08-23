@@ -2,14 +2,15 @@
  * @dev Define a uniform Block type for the whole project
  */
 interface Block {
-    block_number: number,
-    epoch_number: number,
+    epoch_number: number, // Epoch number field won't be stored in database, it's only used for calculating purpose
+    status: number, // 1: accepted, 2: missed, 3: orphaned. Status won't be stored in db as well.
+    
+    number: number,
     proposer_index: number,
-    block_hash: string,
+    hash: string,
     timestamp: number,
     fee_recipient: string,
-    status: number, // 1: accepted, 2: missed, 3: orphaned
-    transaction_count?: number,
+    transaction_count: number,
     gas_used: bigint,
     gas_limit: bigint,
     parent_hash: string,
