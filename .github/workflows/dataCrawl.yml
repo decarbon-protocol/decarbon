@@ -19,4 +19,4 @@ jobs:
             sudo mkdir production
             cd production
             git clone git@github.com:decarbon-protocol/decarbon
-            echo 'Deployment to digital ocean finished'
+            echo 'Clone to digital ocean finished'
