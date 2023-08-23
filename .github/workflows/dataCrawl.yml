@@ -15,7 +15,6 @@ jobs:
           username: ${{ secrets.SSH_USER }} # User of the server you want to ssh into
           port: ${{ secrets.PORT }}
           script: |
-            killall node
             cd ~
             rm -rf production
             mkdir production
