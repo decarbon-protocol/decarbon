@@ -15,9 +15,14 @@ jobs:
           username: ${{ secrets.SSH_USER }} # User of the server you want to ssh into
           port: ${{ secrets.PORT }}
           script: |
+            killall node
             cd ~
             rm -rf production
             mkdir production
             cd production
             git clone git@github.com:decarbon-protocol/decarbon.git
             echo 'Clone to digital ocean finished'
+            cd decarbon
+            cd decarbon-demo
+            npm install
+            npm run start-estimator
