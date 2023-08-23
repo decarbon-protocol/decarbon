@@ -19,5 +19,5 @@ jobs:
             sudo rm -rf production
             sudo mkdir production
             cd production
-            git clone git@github.com:decarbon-protocol/decarbon
+            git clone git@github.com:decarbon-protocol/decarbon.git
             echo 'Clone to digital ocean finished'
