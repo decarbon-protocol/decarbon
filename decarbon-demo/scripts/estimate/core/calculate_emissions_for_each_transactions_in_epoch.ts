@@ -33,10 +33,10 @@ function applyFormula(
  * @dev We should update the database as soon as this function finishes
  * @param _epoch objects of type 'Epoch'. See 'scripts/interfaces/Epoch.ts" for more details
  * @param _transactionList an array of Transaction objects. See 'scripts/interfaces/Transaction.ts' for more details
- * @param _addressToAccount a set of addresses, kinda like a watch list, meaning we only calculate emissions for these addresses. *Note: all addresses in the list should be lowercase
+ * @param _addressList a set of addresses, kinda like a watch list, meaning we only calculate emissions for these addresses. *Note: all addresses in the list should be lowercase
  * @returns true if execution was successful, false otherwise
  */
-export default async function calculate_emissions_of_transactions_in_epoch(_epoch: Epoch, _transactionList: Transaction[], _addressToAccount: Map<string, Account>, debug: boolean = false)
+export default async function calculate_emissions_of_transactions_in_epoch(_epoch: Epoch, _transactionList: Transaction[], _addressList: Set<string>, debug: boolean = false)
     : Promise<boolean> {
     output(`Calculating emissions of transactions in epoch ${_epoch.epoch_number}...\n`);
     try {
@@ -113,7 +113,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
                 }
                 const transaction__sender: string = transactionResponses[j].from as string;
                 const transaction__receiver: string = transactionResponses[j].to as string;
-                if (_addressToAccount.has(transaction__sender) || _addressToAccount.has(transaction__receiver)) {
+                if (_addressList.has(transaction__sender) || _addressList.has(transaction__receiver)) {
                     const transaction__gasUsed: bigint = BigInt(hex2Dec(transactionReceipts[j].gasUsed as string));
                     const transaction__gasPrice: bigint = BigInt(hex2Dec(transactionResponses[j].gasPrice as string));
                     const transaction__value: bigint = BigInt(hex2Dec(transactionResponses[j].value as string));
@@ -152,17 +152,17 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
                     }
                     _transactionList.push(newTransaction);
 
-                    if (_addressToAccount.has(transaction__sender)) {
-                        let currentValues = _addressToAccount.get(transaction__sender);
-                        currentValues!.eth_sent += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
-                        // currentValues!.account_balance -= transaction__ethBalanceChange; //  This doesn't necessarily reflects the true balance of an address
-                    }
+                    // if (_addressToAccount.has(transaction__sender)) {
+                    //     let currentValues = _addressToAccount.get(transaction__sender);
+                    //     currentValues!.eth_sent += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
+                    //     // currentValues!.account_balance -= transaction__ethBalanceChange; //  This doesn't necessarily reflects the true balance of an address
+                    // }
 
-                    if (_addressToAccount.has(transaction__receiver)) {
-                        let currentValues = _addressToAccount.get(transaction__receiver);
-                        currentValues!.eth_received += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
-                        // currentValues!.account_balance += transaction__ethBalanceChange; // This doesn't necessarily reflects the true balance of an address
-                    }
+                    // if (_addressToAccount.has(transaction__receiver)) {
+                    //     let currentValues = _addressToAccount.get(transaction__receiver);
+                    //     currentValues!.eth_received += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
+                    //     // currentValues!.account_balance += transaction__ethBalanceChange; // This doesn't necessarily reflects the true balance of an address
+                    // }
                 }
             }
         }

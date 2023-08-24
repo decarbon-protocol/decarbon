@@ -30,7 +30,7 @@ log(pid, "data/pid");
  */
 const queue: Queue<Epoch> = new Queue<Epoch>();
 const worker: Worker = new Worker("./build/estimate/execute/worker_thread.js");
-let addressToAccount: Map<string, Account> = new Map<string, Account>();
+let addressList: Set<string> = new Set<string>();
 let transactionList: Transaction[] = [];
 
 /**
@@ -117,16 +117,16 @@ export default async function main()
                     queue.dequeue();
 
                     // If we cannot fetch accounts from database, skip the epoch
-                    let success: boolean = await fetch_accounts_from_db(addressToAccount);
+                    let success: boolean = await fetch_accounts_from_db(addressList);
                     if (!success) {
-                        output(`Failed to fetch accounts from database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        output(`Failed to fetch accounts from database, skipping epoch ${oldestEpoch.epoch_number}`);
                         continue;
                     }
 
-                    success = await calculate_emissions_of_transactions_in_epoch(oldestEpoch, transactionList, addressToAccount);
+                    success = await calculate_emissions_of_transactions_in_epoch(oldestEpoch, transactionList, addressList);
                     if (!success) {
                         // If unfortunately the provider's server is down, we have to skip this epoch
-                        output(`Due to server error, skipping epoch ${oldestEpoch.epoch_number}...`, logPath);
+                        output(`Due to server error, skipping epoch ${oldestEpoch.epoch_number}...`);
                         continue;
                     }
 
@@ -139,8 +139,8 @@ export default async function main()
 
                     success = await insert_blocks(oldestEpoch.blocks!);
                     if (!success) {
-                        output(`Failed to insert new blocks into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath)
-                        output(`Reverting changes done to db`, logPath);
+                        output(`Failed to insert new blocks into database, skipping epoch ${oldestEpoch.epoch_number}`)
+                        output(`Reverting changes done to db`);
                         // Revert account changes above
 
                         continue;
@@ -148,12 +148,14 @@ export default async function main()
 
                     success = await insert_transactions(transactionList);
                     if (!success) {
-                        output(`Failed to insert new transactions into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
-                        output(`Reverting changes done to db`, logPath);
+                        output(`Failed to insert new transactions into database, skipping epoch ${oldestEpoch.epoch_number}`);
+                        output(`Reverting changes done to db`);
                         // Revert new blocks added above
 
                         continue;
                     }
+                    // Clear transaction list after saving to db
+                    transactionList.splice(0);
                 }
             }
             else {

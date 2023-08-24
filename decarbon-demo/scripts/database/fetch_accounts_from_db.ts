@@ -4,24 +4,20 @@ import { utils } from "ethers";
 import { prisma } from ".";
 import { output } from "../utils";
 
-export default async function fetch_accounts_from_db(_addressToAccount: Map<string, Account>)
+export default async function fetch_accounts_from_db(_addressList: Set<string>)
     : Promise<boolean> {
     try {
         // console.log(`\tFetching accounts from database...`);
         output(`\tFetching accounts from database...`);
         const rows = await prisma.d_account.findMany();
+        console.log(rows);
         // console.log(`\tDone! Number of accounts: ${rows.length}`);
         // console.log(`\tSetting up account map...`);
         output(`\tDone! Number of accounts: ${rows.length}`);
         output(`\tSetting up account map...`);
-        rows.forEach((row: Record<string, number | bigint | string | null>) => {
-            const account: Account = {
-                address: row.address as string,
-                eth_received: parseFloat(row.eth_received!.toString()),
-                eth_sent: parseFloat(row.eth_sent!.toString())
-            };
-            _addressToAccount.set(row.address as string, account); // Update the Map directly
-        });
+        for (const account of rows) {
+            _addressList.add(account.address);
+        }
         // console.log("\tDone!\n");
         output("\tDone!\n");
         return true;
@@ -33,13 +29,13 @@ export default async function fetch_accounts_from_db(_addressToAccount: Map<stri
 }
 
 // Testing
-// let addressToAccont: Map<string, Account> = new Map<string, Account>();
-// fetch_accounts_from_db(addressToAccont)
+// let addressList: string[] = [];
+// fetch_accounts_from_db(addressList)
 //     .then(success => {
 //         if (success) {
-//             console.log(addressToAccont.size);
-//             for (const [key, value] of addressToAccont) {
-//                 console.log(`Address: ${key}{${value.account_id}, ${value.eth_received}, ${value.eth_sent}}`);
+//             console.log(addressList.length);
+//             for (const address of addressList) {
+//                 console.log(address);
 //             }
 //         }
 //     })
