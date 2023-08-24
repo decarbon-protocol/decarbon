@@ -7,7 +7,7 @@ import { Epoch } from "../../interfaces";
 import { get_total_eth_supply_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { constants } from "../../01_constants";
 import { get_avg_emissions_of_epoch } from "../../aggregate/use_ccri_apis";
-import { clearLog, log } from "../../utils";
+import { clearLog, log, output } from "../../utils";
 import fs from "fs";
 
 const logPath: string = "data/logs/worker_thread.log";
@@ -44,11 +44,20 @@ async function continually_export_latest_epoch()
     : Promise<void> {
     try {
         while (true) {
-            const blocksResponse: AxiosResponse = await axios.get(
-                `${url}/epoch/latest/slots?apiKey=${apiKey}`
-            );
-
-            const blocks: Record<string, unknown>[] = blocksResponse.data.data;
+            let blocksResponse: AxiosResponse;
+            while (true) {
+                try {
+                    blocksResponse = await axios.get(`${url}/epoch/latest/slots?apiKey=${apiKey}`);
+                    break;
+                } catch(err) {
+                    output(`Worker thread: cannot get info about the current epoch, (could be beaconchai.in server error): ${err}`);
+                    await new Promise<void>(resolve => {
+                        setTimeout(resolve, 4 * 1000);
+                    });
+                    output("Retrying until we can get some info about the latest epoch...");
+                }
+            }
+            const blocks: Record<string, unknown>[] = blocksResponse!.data.data;
             if (blocks.length <= 0) {
                 throw new Error("No blocks found in epoch");
             }
@@ -90,11 +99,11 @@ async function continually_export_latest_epoch()
                 });
         }
     } catch (err: unknown) {
-        throw new Error(`add_new_epoch_to_queue()^ Error: ${err}`);
+        throw new Error(`continually_export_latest_epoch): ${err}`);
     }
 }
 
 // Run function
 continually_export_latest_epoch().catch((err: unknown) => {
-    console.log(err);
+    output(err);
 });
