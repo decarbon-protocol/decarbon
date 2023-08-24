@@ -112,7 +112,7 @@ export default async function main()
                 else {
                     log(`Epoch ${oldestEpoch.epoch_number}'s just finalized!\n`, logPath);
                     // console.log(`Processing epoch ${oldestEpoch.epoch_number}...\n`);
-                    output(`Processing epoch ${oldestEpoch.epoch_number}...\n`);
+                    output(`--------------------------------------------------------- Processing epoch ${oldestEpoch.epoch_number} ---------------------------------------------------------\n`);
                     oldestEpoch.finalized = true;
                     queue.dequeue();
 
