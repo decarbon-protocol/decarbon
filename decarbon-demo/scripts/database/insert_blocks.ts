@@ -7,7 +7,7 @@ export default async function insert_blocks(_blockList: Block[])
 : Promise<boolean> {
     try {
         output("\tInserting new blocks into database...");
-        await prisma.d_block.createMany({
+        await prisma.blocks.createMany({
             data: _blockList.map((block) => ({
                 number: BigInt(block.number),
                 proposer_index: BigInt(block.proposer_index),

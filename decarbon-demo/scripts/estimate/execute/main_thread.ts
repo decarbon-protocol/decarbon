@@ -131,11 +131,11 @@ export default async function main()
                     }
 
                     // If the calculation was successful, we save results to the database
-                    success = await update_account_data(addressToAccount);
-                    if (!success) {
-                        output(`Failed to insert new transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
-                        continue;
-                    }
+                    // success = await update_account_data(addressToAccount);
+                    // if (!success) {
+                    //     output(`Failed to insert new transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                    //     continue;
+                    // }
 
                     success = await insert_blocks(oldestEpoch.blocks!);
                     if (!success) {

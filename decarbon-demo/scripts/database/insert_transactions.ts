@@ -9,14 +9,14 @@ export default async function insert_transactions(_transactionList: Transaction[
 : Promise<boolean> {
     try {
         output("\tInserting new transactions into database...");
-        await prisma.d_transaction.createMany({
+        await prisma.transactions.createMany({
             data: _transactionList.map((transaction) => ({
                 hash: transaction.hash,
                 nonce: transaction.nonce,
                 transaction_index: transaction.transaction_index,
                 from_address: transaction.from_address,
                 to_address: transaction.to_address,
-                value: utils.formatEther(transaction.value),
+                value: transaction.value.toString(),
                 gas: transaction.gas,
                 gas_price: transaction.gas_price,
                 block_number: transaction.block_number,
@@ -41,19 +41,6 @@ export default async function insert_transactions(_transactionList: Transaction[
 // Testing
 // const mocks: Transaction[] = [
 //    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
-//    exampleTransaction,
 // ]
 
 // console.log("Inserting into db...");
@@ -62,6 +49,9 @@ export default async function insert_transactions(_transactionList: Transaction[
 //         if (success) {
 //             const rows = await prisma.d_transaction.findMany();
 //             console.log(rows);
+//         }
+//         else {
+//             console.log("Failed");
 //         }
 //         console.log("Done");
 //     })
