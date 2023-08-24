@@ -54,7 +54,7 @@ export default function Home() {
                     />
                   </FormControl>
                   <FormDescription>
-                    Enter your address to check the carbon emission.
+                    Enter your address to check the carbon emission!
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

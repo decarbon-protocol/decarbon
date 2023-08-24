@@ -16,7 +16,6 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd ~
-            sudo killall node
             sudo rm -rf production
             mkdir production
             cd production
@@ -24,5 +23,3 @@ jobs:
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            npm install
-            npm run start-estimator
