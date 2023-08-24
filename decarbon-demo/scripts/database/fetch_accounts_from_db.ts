@@ -14,13 +14,11 @@ export default async function fetch_accounts_from_db(_addressToAccount: Map<stri
         // console.log(`\tSetting up account map...`);
         output(`\tDone! Number of accounts: ${rows.length}`);
         output(`\tSetting up account map...`);
-        rows.forEach(row => {
+        rows.forEach((row: Record<string, number | bigint | string | null>) => {
             const account: Account = {
-                account_id: row.account_id,
-                address: row.address,
+                address: row.address as string,
                 eth_received: parseFloat(row.eth_received!.toString()),
                 eth_sent: parseFloat(row.eth_sent!.toString())
-                // account_balance: utils.parseEther(row.account_balance!.toString()).toBigInt(),
             };
             _addressToAccount.set(row.address as string, account); // Update the Map directly
         });
