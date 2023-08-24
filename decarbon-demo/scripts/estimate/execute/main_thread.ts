@@ -12,11 +12,14 @@ import insert_blocks from "../../database/insert_blocks";
 import { disconnectDb } from "../../database";
 
 /**
- * @notice set the path of log file and clear the log file
+ * @notice set the path of log file, process ID and clear the log file
  */
 const logPath: string = "data/logs/main_thread.log";
 clearLog(logPath);
 clearLog("data/logs/output.log");
+clearLog("data/pid");
+const pid: number = process.pid;
+log(pid, "data/pid");
 
 /**
  * @notice These are the 4 crucial global variables for the main thread to run
@@ -77,18 +80,18 @@ worker.on("message", (serializedEpoch: Record<string, unknown>) => {
  * @notice handle program termination events
  */
 process.on("SIGINT", async () => {
-    console.log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    output("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");  
-    log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
+    console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    output("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");  
+    log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
     await disconnectDb();
     process.exit(0);
 
 })
 
 process.on("SIGTERM", async () => {
-    console.log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    output("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
+    console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    output("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
     await disconnectDb();
     process.exit(0);
 });
@@ -180,6 +183,7 @@ if (isMainThread) {
     console.log("To see its internal log, take a look at these files:\n\t'data/logs/main_thread.log'\n\t'data/logs/worker_thread.log'");
     console.log("To see the calculation results (if finished calculating), check the database");
     console.log("To see output and errors of the program, look at 'data/logs/output.log'\n");
+    console.log(`Process id: ${process.pid}`)
     console.log("=================================================================================\n");
 
     main()
@@ -187,9 +191,9 @@ if (isMainThread) {
         .catch(err => async function() {
             output(err);
             await disconnectDb();
-            console.log("Esimator died (X.X ).");
-            output("Esimator died (X.X ).");
-            log("Esimator died (X.X ).");
+            console.log("Estimator died (X.X ).");
+            output("Estimator died (X.X ).");
+            log("Estimator died (X.X ).");
             process.exit(1);
         })
 }
