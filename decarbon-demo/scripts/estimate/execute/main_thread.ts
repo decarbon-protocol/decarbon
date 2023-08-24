@@ -7,14 +7,16 @@ import { calculate_emissions_of_transactions_in_epoch } from "../core";
 import { fetch_accounts_from_db, insert_transactions, update_account_data } from "../../database";
 import { Worker, isMainThread } from "worker_threads";
 import { constants } from "../../01_constants";
-import { clearLog, log } from "../../utils";
+import { clearLog, log, output } from "../../utils";
 import insert_blocks from "../../database/insert_blocks";
+import { disconnectDb } from "../../database";
 
 /**
  * @notice set the path of log file and clear the log file
  */
 const logPath: string = "data/logs/main_thread.log";
 clearLog(logPath);
+clearLog("data/logs/output.log");
 
 /**
  * @notice These are the 4 crucial global variables for the main thread to run
@@ -64,13 +66,36 @@ function deserializeEpoch(serializedEpoch: Record<string, unknown>): Epoch {
  */
 worker.on("message", (serializedEpoch: Record<string, unknown>) => {
     queue.enqueue(deserializeEpoch(serializedEpoch));
-    log(`Received epoch ${queue.front()?.epoch_number} from worker thread!`, logPath);
+    log(`Received epoch ${queue.back()?.epoch_number} from worker thread!`, logPath);
     log(`Front of queue: ${queue.front()?.epoch_number}`, logPath);
     log(`Back of queue: ${queue.back()?.epoch_number}`, logPath);
     log(`Length of queue: ${queue.size()}`, logPath);
-    log(queue.size() < 4 ? `Good news: ${(4 - queue.size()) * constants.NUM_MINUTES_IN_EPOCH} minutes left until epoch ${queue.front()?.epoch_number} finalizes (〃￣︶￣)人(￣︶￣〃)` : "", logPath);
+    // log(queue.size() < 4 ? `Good news: ${(4 - queue.size()) * constants.NUM_MINUTES_IN_EPOCH} minutes left until epoch ${queue.front()?.epoch_number} finalizes (〃￣︶￣)人(￣︶￣〃)` : "", logPath);
 });
 
+/**
+ * @notice handle program termination events
+ */
+process.on("SIGINT", async () => {
+    console.log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    output("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");  
+    log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
+    await disconnectDb();
+    process.exit(0);
+
+})
+
+process.on("SIGTERM", async () => {
+    console.log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    output("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+    log("Esimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
+    await disconnectDb();
+    process.exit(0);
+});
+
+/**
+ * @notice main function of the program, this function invokes other sub-functions
+ */
 export default async function main()
     : Promise<void> {
     try {
@@ -79,40 +104,40 @@ export default async function main()
                 let oldestEpoch: Epoch = queue.front()!;
                 const confirmed: boolean = await confirm_finalization_of_epoch(oldestEpoch);
                 if (!confirmed) {
-                    log(`Epoch ${oldestEpoch.epoch_number}'s finalization status isn't confirmed`, logPath);
                     continue;
                 }
                 else {
-                    log(`Epoch ${oldestEpoch.epoch_number}'s finalization status is confirmed!`, logPath);
-                    console.log(`Processing epoch ${oldestEpoch.epoch_number}...\n`);
+                    log(`Epoch ${oldestEpoch.epoch_number}'s just finalized!\n`, logPath);
+                    // console.log(`Processing epoch ${oldestEpoch.epoch_number}...\n`);
+                    output(`Processing epoch ${oldestEpoch.epoch_number}...\n`);
                     oldestEpoch.finalized = true;
                     queue.dequeue();
 
                     // If we cannot fetch accounts from database, skip the epoch
                     let success: boolean = await fetch_accounts_from_db(addressToAccount);
                     if (!success) {
-                        log(`Failed to fetch accounts from database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        output(`Failed to fetch accounts from database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
                         continue;
                     }
 
                     success = await calculate_emissions_of_transactions_in_epoch(oldestEpoch, transactionList, addressToAccount);
                     if (!success) {
-                        // If unfortunately the provider's server is down, we have to skip thsi epoch
-                        log(`Due to server error, skipping epoch ${oldestEpoch.epoch_number}...`, logPath);
+                        // If unfortunately the provider's server is down, we have to skip this epoch
+                        output(`Due to server error, skipping epoch ${oldestEpoch.epoch_number}...`, logPath);
                         continue;
                     }
 
                     // If the calculation was successful, we save results to the database
                     success = await update_account_data(addressToAccount);
                     if (!success) {
-                        log(`Failed to update transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        output(`Failed to insert new transactions to database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
                         continue;
                     }
 
                     success = await insert_blocks(oldestEpoch.blocks!);
                     if (!success) {
-                        log(`Failed to insert new blocks into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath)
-                        log(`Reverting changes done to db`, logPath);
+                        output(`Failed to insert new blocks into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath)
+                        output(`Reverting changes done to db`, logPath);
                         // Revert account changes above
 
                         continue;
@@ -120,8 +145,8 @@ export default async function main()
 
                     success = await insert_transactions(transactionList);
                     if (!success) {
-                        log(`Failed to insert new transactions into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
-                        log(`Reverting changes done to db`, logPath);
+                        output(`Failed to insert new transactions into database, skipping epoch ${oldestEpoch.epoch_number}`, logPath);
+                        output(`Reverting changes done to db`, logPath);
                         // Revert new blocks added above
 
                         continue;
@@ -143,17 +168,28 @@ export default async function main()
     }
     finally {
         provider.removeAllListeners("block");
-        console.log(`Finished processing epoch\n`);
+        // console.log(`Finished processing epoch\n`);
+        output(`Finished processing epoch\n`);
     }
 }
 
 // Execute main thread
 if (isMainThread) {
+    console.log("=================================================================================\n");
     console.log("Estimator has been started\nSay hi to Estimator, ヾ(＠⌒ー⌒＠)ノ, its job is to continually\n\taggregate Ethereum data every 6.4 minutes\n\t\tand calculate the carbon emissions of each transactions in that time period,\n\t\t\tthen finally save the calculation results to database\n\t\t\t\tand repeat |^^| ");
     console.log("To see its internal log, take a look at these files:\n\t'data/logs/main_thread.log'\n\t'data/logs/worker_thread.log'");
-    console.log("To see the calculation results (if finished calculating), check this file:\n\t'data/logs/transactionList.json'");
-    console.log("================================\n");
+    console.log("To see the calculation results (if finished calculating), check the database");
+    console.log("To see output and errors of the program, look at 'data/logs/output.log'\n");
+    console.log("=================================================================================\n");
+
     main()
         .then(() => { })
-        .catch(err => console.error(err))
+        .catch(err => async function() {
+            output(err);
+            await disconnectDb();
+            console.log("Esimator died (X.X ).");
+            output("Esimator died (X.X ).");
+            log("Esimator died (X.X ).");
+            process.exit(1);
+        })
 }

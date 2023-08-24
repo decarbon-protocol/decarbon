@@ -1,6 +1,7 @@
 import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
 import { url, apiKey } from "./";
+import { output } from "../../utils";
 
 /**
  * 
@@ -26,14 +27,16 @@ export default async function get_total_tx_fee_reward_of_epoch(_epoch: Epoch)
                     break;
                 } catch (err) {
                     if (axios.isAxiosError(err)) {
-                        console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
+                        // console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
+                        output(`\t\tServer error on attempt ${retryCount + 1}: ${err}`);
                         await new Promise(resolve => setTimeout(resolve, 1000));
                         retryCount++;
                     }
                 }
             }
             if (retryCount > MAX_RETRY_ATTEMPTS) {
-                console.error(`Failed to get block reward for block ${block.number} due to provider's server error`);
+                // console.error(`Failed to get block reward for block ${block.number} due to provider's server error`);
+                output(`Failed to get block reward for block ${block.number} due to provider's server error`);
                 return false;
             }
             else {

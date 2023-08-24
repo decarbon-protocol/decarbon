@@ -2,8 +2,7 @@ import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
 import { url } from "./";
 import { constants } from "../../01_constants";
-import { provider } from "../use_json_rpc";
-
+import { output } from "../../utils";
 
 export default async function get_total_validator_payout_of_epoch(_epoch: Epoch)
     : Promise<boolean> {
@@ -27,19 +26,22 @@ export default async function get_total_validator_payout_of_epoch(_epoch: Epoch)
             return true;
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                console.error(`\t\tServer error on attempt ${retryCount + 1}: `, err);
+                // console.error(`\t\tServer error on attempt ${retryCount + 1}: `, err);
+                output(`\t\tServer error on attempt ${retryCount + 1}: ${err}`);
                 await new Promise(resolve => {
                     setTimeout(resolve, 12 * 1000);
                 })
                 retryCount++;
-                console.log('\t\tRetrying...');
+                // console.log('\t\tRetrying...');
+                output('\t\tRetrying...');
             }
             else {
                 throw new Error(`get_total_validator_payout_of_epoch(): ${err}`);
             }
         }
     }
-    console.error("\t\tMaximum retry attempts exceeded.");
+    // console.error("\t\tMaximum retry attempts exceeded.");
+    output("\t\tMaximum retry attempts exceeded.");
     return false;
 }
 

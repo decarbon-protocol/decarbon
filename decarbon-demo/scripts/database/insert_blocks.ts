@@ -1,10 +1,12 @@
 import { prisma } from "./";
 import { Block } from "../interfaces";
 import { exampleEpoch } from "../interfaces";
+import { output } from "../utils";
 
 export default async function insert_blocks(_blockList: Block[])
 : Promise<boolean> {
     try {
+        output("\tInserting new blocks into database...");
         await prisma.d_block.createMany({
             data: _blockList.map((block) => ({
                 number: BigInt(block.number),
@@ -20,9 +22,11 @@ export default async function insert_blocks(_blockList: Block[])
                 transaction_count: BigInt(block.transaction_count),
             }))
         })
+        output("\tDone!");
         return true;
     } catch (err) {
-        console.error(err);
+        // console.error(err);
+        output(err);
         return false;
     }
 }

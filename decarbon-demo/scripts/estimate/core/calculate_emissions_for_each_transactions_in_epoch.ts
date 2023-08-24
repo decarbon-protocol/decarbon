@@ -1,6 +1,6 @@
 import { Epoch, exampleEpoch, Transaction, Block, Account, exampleAccount } from "../../interfaces";
 import { get_tx_of_block } from "../../aggregate/use_json_rpc";
-import { hex2Dec, log } from "../../utils";
+import { hex2Dec, log, output } from "../../utils";
 import { ethers } from "ethers";
 import { get_tx_from_hashes } from "../../aggregate/use_json_rpc";
 import fs from "fs";
@@ -38,7 +38,7 @@ function applyFormula(
  */
 export default async function calculate_emissions_of_transactions_in_epoch(_epoch: Epoch, _transactionList: Transaction[], _addressToAccount: Map<string, Account>, debug: boolean = false)
     : Promise<boolean> {
-    console.log(`Calculating emissions of transactions in epoch ${_epoch.epoch_number}...\n`);
+    output(`Calculating emissions of transactions in epoch ${_epoch.epoch_number}...\n`);
     try {
         // If we can't get blocks in epoch (could be server error), we skip this epoch and move on to the next epoch
         let success: boolean = await get_blocks_of_epoch(_epoch);
@@ -82,12 +82,14 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
                     transactionResponses = data[1];
                 }
                 else {
-                    console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                    // console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                    output(`Failed to get transactions in epoch ${_epoch.epoch_number}!`);
                     return false;
                 }
             }
             else {
-                console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                // console.error(`Failed to get fetch transactions in epoch ${_epoch.epoch_number}!`);
+                output(`Failed to get transactions in epoch ${_epoch.epoch_number}!`);
                 return false;
             }
 
@@ -97,7 +99,8 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
             }
 
             if (transactionResponses.length != transactionReceipts.length) {
-                console.error("Unexpected: transactionResponses.length != transactionReceipts.length");
+                // console.error("Unexpected: transactionResponses.length != transactionReceipts.length");
+                output("Unexpected: transactionResponses.length != transactionReceipts.length");
                 return false;
             }
 
@@ -115,10 +118,10 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
                     const transaction__gasPrice: bigint = BigInt(hex2Dec(transactionResponses[j].gasPrice as string));
                     const transaction__value: bigint = BigInt(hex2Dec(transactionResponses[j].value as string));
                     const transaction__txFeePaid: bigint = transaction__gasUsed * transaction__gasPrice;
-                    const transaction__ethBalanceChange: bigint = transaction__value + transaction__txFeePaid;
+                    const transaction__weiBalanceChange: bigint = transaction__value + transaction__txFeePaid;
                     const [transaction__senderEmissions, transaction__receiverEmissions] = applyFormula(
                         transaction__txFeePaid,
-                        transaction__ethBalanceChange,
+                        transaction__weiBalanceChange,
                         all__txFeePaid,
                         all__totalEthSupply,
                         all__xFactor,
@@ -151,13 +154,13 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 
                     if (_addressToAccount.has(transaction__sender)) {
                         let currentValues = _addressToAccount.get(transaction__sender);
-                        currentValues!.eth_sent += transaction__ethBalanceChange;
+                        currentValues!.eth_sent += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
                         // currentValues!.account_balance -= transaction__ethBalanceChange; //  This doesn't necessarily reflects the true balance of an address
                     }
 
                     if (_addressToAccount.has(transaction__receiver)) {
                         let currentValues = _addressToAccount.get(transaction__receiver);
-                        currentValues!.eth_received += transaction__ethBalanceChange;
+                        currentValues!.eth_received += parseFloat(ethers.utils.formatEther(transaction__weiBalanceChange));
                         // currentValues!.account_balance += transaction__ethBalanceChange; // This doesn't necessarily reflects the true balance of an address
                     }
                 }
@@ -166,7 +169,7 @@ export default async function calculate_emissions_of_transactions_in_epoch(_epoc
 
         // console.log(_transactionList);
         // log(JSON.stringify(_transac tionList, null, 4), logPath);
-        console.log("Done!");
+        output("Done!");
 
         return true;
     } catch (err) {

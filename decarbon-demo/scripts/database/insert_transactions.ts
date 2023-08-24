@@ -1,6 +1,6 @@
 import { prisma } from "./";
 import { Transaction, exampleTransaction } from "../interfaces";
-import { log } from "../utils";
+import { log, output } from "../utils";
 import { utils } from "ethers";
 
 const logPath: string = "data/logs/database/insert_transactions.log";
@@ -8,7 +8,7 @@ const logPath: string = "data/logs/database/insert_transactions.log";
 export default async function insert_transactions(_transactionList: Transaction[]) 
 : Promise<boolean> {
     try {
-        console.log("\tInserting new transactions into database...");
+        output("\tInserting new transactions into database...");
         await prisma.d_transaction.createMany({
             data: _transactionList.map((transaction) => ({
                 hash: transaction.hash,
@@ -30,10 +30,10 @@ export default async function insert_transactions(_transactionList: Transaction[
                 emission_by_balance: transaction.emission_by_balance
             }))
         })        
-        console.log("Done!");
+        output("\tDone!");
         return true;
     } catch (err) {
-        console.error(err);
+        output(err);
         return false;
     }
 }

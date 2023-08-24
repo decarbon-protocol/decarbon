@@ -2,6 +2,7 @@ import { provider } from "./";
 import { Block, exampleBlock } from "../../interfaces";
 import fs from "fs";
 import axios from "axios";
+import { output } from "../../utils";
 
 /**
  * 
@@ -42,12 +43,14 @@ export default async function get_tx_of_block(_block: Block, txResponse: boolean
 
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                console.error(`\t\tServer error on attempt ${retryCount + 1}`);
+                // console.error(`\t\tServer error on attempt ${retryCount + 1}`);
+                output(`\t\tServer error on attempt ${retryCount + 1}`);
                 await new Promise(resolve => {
                     setTimeout(resolve, 5000 * 1000);
                 })
                 retryCount++;
-                console.log("Retrying...");
+                // console.log("Retrying...");
+                output("Retrying...");
             }
             else {
                 throw new Error(`get_tx_of_block()^: ${err}`);
@@ -55,7 +58,8 @@ export default async function get_tx_of_block(_block: Block, txResponse: boolean
         }
     }
     // If exceed maximum retry attempt allowed, return false
-    console.error("\nMaximum retry attempts exceeded.");
+    // console.error("\nMaximum retry attempts exceeded.");
+    output("\nMaximum retry attempts exceeded.");
     return false;
 }
 

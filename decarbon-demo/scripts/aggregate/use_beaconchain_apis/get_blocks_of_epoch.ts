@@ -2,7 +2,7 @@ import axios, { AxiosError, AxiosResponse } from "axios";
 import { Block, Epoch, exampleEpoch } from "../../interfaces";
 import { url, apiKey } from ".";
 import { provider } from "../use_json_rpc";
-import { log } from "../../utils";
+import { output } from "../../utils";
 import { constants } from "../../01_constants";
 
 /**
@@ -18,7 +18,7 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
 
     while (retryCount <= MAX_RETRY_ATTEMPTS) {
         try {
-            console.log(`\tGetting blocks of epoch ${_epoch.epoch_number}...`);
+            output(`\tGetting blocks of epoch ${_epoch.epoch_number}...`);
             const response: AxiosResponse = await axios.get(`${url}/epoch/${_epoch.epoch_number}/slots?apiKey=${apiKey}`);
             const blocks: Block[] = [];
             for (const block of response.data.data) {
@@ -43,18 +43,19 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
             }
 
             _epoch.blocks = blocks;
-            console.log("\tDone!\n");
+            output("\tDone!\n");
             return true;
 
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
+                // console.error(`\t\tServer error on attempt ${retryCount + 1}:`, err);
+                output(`\t\tServer error on attempt ${retryCount + 1}:`);
                 // Wait for 1 block before retrying
                 await new Promise<void>(resolve => {
                     setTimeout(resolve, 12 * 1000);
                 });
                 retryCount++;
-                console.log('\t\tRetrying...');
+                output('\t\tRetrying...');
             }
             else {
                 throw new Error(`get_blocks_of_epoch(): ${err}`);
@@ -62,7 +63,8 @@ export default async function get_blocks_of_epoch(_epoch: Epoch)
         }
     }
     // If exceed maximum retry attempts
-    console.error("\nMaximum retry attempts exceeded.");
+    // console.error("\nMaximum retry attempts exceeded.");
+    output("\nMaximum retry attempts exceeded.", "data/logs/error.log");
     return false;
 }
 

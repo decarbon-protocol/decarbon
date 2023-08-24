@@ -1,5 +1,6 @@
 import axios, { AxiosError } from 'axios';
-import { provider, url } from ".";
+import { url } from "./";
+import { output } from '../../utils';
 
 export default async function get_tx_from_hashes(transactionHashes: string[])
 : Promise<[Record<string, string | boolean | []>[], Record<string, string | boolean | []>[]] | undefined>{
@@ -27,12 +28,14 @@ export default async function get_tx_from_hashes(transactionHashes: string[])
             return [receiptResults, transactionResults];
         } catch (err) {
             if (axios.isAxiosError(err)) {
-                console.error(`Server error on attempt ${retryCount + 1}:`, err);
+                // console.error(`Server error on attempt ${retryCount + 1}:`, err);
+                output(`Server error on attempt ${retryCount + 1}, HTTP status code: ${err.response?.status}`);
                 await new Promise<void>(resolve => {
                     setTimeout(resolve, 12 * 1000);
                 });
                 retryCount++;
-                console.log("Retrying...");
+                // console.log("Retrying...");
+                output("Retrying...");
             }
             else {
                 throw new Error(`get_tx_from_hashes(): ${err}`);
@@ -40,7 +43,8 @@ export default async function get_tx_from_hashes(transactionHashes: string[])
         }
     }
     // If maximum attempts exceeded, print out error and don't return anything
-    console.error("\tMaximum retry attempts exceeded.");
+    // console.error("\tMaximum retry attempts exceeded.");
+    output("\tMaximum retry attempts exceeded.");
 }
 
 // Testing
