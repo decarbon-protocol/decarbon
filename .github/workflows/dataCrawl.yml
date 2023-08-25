@@ -24,6 +24,7 @@ jobs:
             git clone git@github.com:decarbon-protocol/decarbon.git
             cd decarbon
             cd decarbon-demo
+            echo "test" > test.txt
             # npm run start-estimator
             # npm run stop-estimator
             # pm2 start build/estimate/execute/main_thread.js
