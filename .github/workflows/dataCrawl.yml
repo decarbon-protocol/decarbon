@@ -18,7 +18,7 @@ jobs:
             # pm2 stop all
             # pm2 delete all
             cd ~
-            sudo rm -rf production
+            rm -rf production
             mkdir production
             cd production
             git clone git@github.com:decarbon-protocol/decarbon.git
