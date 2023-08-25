@@ -27,6 +27,7 @@ jobs:
             cd decarbon-demo
             mkdir -p data/logs
             mkdir -p build
-            npm run start-estimator
+            npx tsc
+            npx prisma generate
             pm2 start build/estimate/execute/main_thread.js
             echo "Deployed"
