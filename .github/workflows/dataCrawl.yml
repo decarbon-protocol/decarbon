@@ -26,5 +26,3 @@ jobs:
             cd decarbon
             cd decarbon-demo
             npm run start-estimator
-            pm2 start build/estimate/execute/main_thread.js
-            echo "Deployed"
