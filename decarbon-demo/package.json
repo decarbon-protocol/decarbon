@@ -5,7 +5,7 @@
         "db:pull-from-db": "npx prisma db pull",
         "db:push-to-db": "npx prisma generate",
         "db:migrate": "npx prisma db execute --file ./script.sql",
-        "start-estimator": "mkdir -p data/logs && mkdir -p build && npx tsc && npx prisma generate && pm2 start build/estimate/execute/main_thread.js",
+        "start-estimator": "npx tsc && npx prisma generate",
         "stop-estimator": "pkill --signal SIGINT --pidfile data/pid"
     },
     "devDependencies": {
