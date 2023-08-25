@@ -10,7 +10,7 @@ export default async function fetch_accounts_from_db(_addressList: Set<string>)
         // console.log(`\tFetching accounts from database...`);
         output(`\tFetching accounts from database...`);
         const rows = await prisma.d_account.findMany();
-        console.log(rows);
+        // console.log(rows);
         // console.log(`\tDone! Number of accounts: ${rows.length}`);
         // console.log(`\tSetting up account map...`);
         output(`\tDone! Number of accounts: ${rows.length}`);
