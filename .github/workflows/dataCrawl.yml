@@ -15,6 +15,7 @@ jobs:
           username: ${{secrets.SSH_USER}} # User of the server you want to ssh into
           port: ${{secrets.PORT}}
           script: |
+            pm2 stop all
             cd ~
             npm run stop-estimator
             rm -rf production
@@ -24,6 +25,6 @@ jobs:
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            npm install
             npm run start-estimator
+            pm2 list
             echo "Deployed"
