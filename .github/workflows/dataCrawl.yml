@@ -25,9 +25,6 @@ jobs:
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            mkdir -p data/logs
-            mkdir -p build
-            npx tsc &
-            npx prisma generate
+            npm run start-estimator
             pm2 start build/estimate/execute/main_thread.js
             echo "Deployed"
