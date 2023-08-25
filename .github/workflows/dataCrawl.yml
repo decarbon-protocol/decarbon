@@ -16,8 +16,8 @@ jobs:
           port: ${{secrets.PORT}}
           script: |
             pm2 stop all
-            cd ~
             npm run stop-estimator
+            cd ~
             rm -rf production
             mkdir production
             cd production
