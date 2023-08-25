@@ -15,18 +15,18 @@ jobs:
           username: ${{secrets.SSH_USER}} # User of the server you want to ssh into
           port: ${{secrets.PORT}}
           script: |
-            pm2 stop all
-            pm2 delete all
+            sudo pm2 stop all
+            sudo pm2 delete all
             cd ~
-            rm -rf production
+            sudo rm -rf production
             mkdir production
             cd production
-            git clone git@github.com:decarbon-protocol/decarbon.git
+            sudo git clone git@github.com:decarbon-protocol/decarbon.git
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            npm install -g npm@9.8.1
-            npm install
-            npm run start-estimator
-            npm run stop-estimator
-            pm2 start build/estimate/execute/main_thread.js
+            sudo npm install -g npm@9.8.1
+            sudo npm install
+            sudo npm run start-estimator
+            sudo npm run stop-estimator
+            sudo pm2 start build/estimate/execute/main_thread.js
