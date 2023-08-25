@@ -16,7 +16,7 @@ jobs:
           port: ${{secrets.PORT}}
           script: |
             pm2 stop all
-            npm run stop-estimator
+            pm2 detele all
             cd ~
             rm -rf production
             mkdir production
@@ -25,6 +25,8 @@ jobs:
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
+            mkdir -p data/logs
+            mkdir -p build
             npm run start-estimator
-            pm2 list
+            pm2 start build/estimate/execute/main_thread.js
             echo "Deployed"
