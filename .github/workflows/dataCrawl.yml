@@ -17,7 +17,7 @@ jobs:
           script: |
             cd ~
             npm run stop-estimator
-            sudo rm -rf production
+            rm -rf production
             mkdir production
             cd production
             git clone git@github.com:decarbon-protocol/decarbon.git
@@ -25,4 +25,7 @@ jobs:
             cd decarbon
             cd decarbon-demo
             npm install
+            npm install pm2 -g
+            pm2 install pm2-logrotate
             npm run start-estimator
+            echo "Deployed"
