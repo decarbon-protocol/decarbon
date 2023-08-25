@@ -24,5 +24,8 @@ jobs:
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            npm install
+            npm install -g @
+            npm install pm2 -g
+            pm2 install pm2-logrotate
             npm run start-estimator
+            echo 'Deployed"
