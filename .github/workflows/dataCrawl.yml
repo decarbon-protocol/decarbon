@@ -21,12 +21,10 @@ jobs:
             sudo rm -rf production
             mkdir production
             cd production
-            sudo git clone git@github.com:decarbon-protocol/decarbon.git
+            git clone git@github.com:decarbon-protocol/decarbon.git
             echo 'Clone to digital ocean finished'
             cd decarbon
             cd decarbon-demo
-            sudo npm install -g npm@9.8.1
-            sudo npm install
             sudo npm run start-estimator
             sudo npm run stop-estimator
             sudo pm2 start build/estimate/execute/main_thread.js
