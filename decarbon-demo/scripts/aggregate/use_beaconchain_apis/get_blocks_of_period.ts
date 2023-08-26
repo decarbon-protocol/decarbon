@@ -11,7 +11,7 @@ import { constants } from "../../01_constants";
  * @dev Each epoch, we only call this function once to aggregate the data of blocks in the most currently-finalized epoch. Then we pass that data as a parameter into other functions from other files in this use_beaconchain_apis_folder.
  * @returns the @param _epoch but with updated Epoch.blocks property
  */
-export default async function get_blocks_of_epoch(_epoch: Epoch)
+export default async function get_blocks_of_period(_epoch: Epoch)
 : Promise<boolean> {
     const MAX_RETRY_ATTEMPTS = constants.NUM_BLOCKS_IN_EPOCH - 1; // Maximum number of retry attempts
     let retryCount = 0;

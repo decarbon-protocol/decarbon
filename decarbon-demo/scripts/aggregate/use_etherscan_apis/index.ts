@@ -2,12 +2,12 @@
 import { network_config, DEFAULT_CHAIN_ID } from "../../00_network_config";
 
 /** Import functions from this directory*/
-import get_total_tx_fee_reward_of_epoch from "./get_total_tx_fee_reward_of_epoch";
-import get_total_eth_supply_of_epoch from "./get_total_eth_supply_of_epoch";
+import get_total_tx_fee_reward_of_period from "./get_total_tx_fee_reward_of_period";
+import get_total_eth_supply_of_period from "./get_total_eth_supply_of_period";
 
 /** Export functions from this directory*/
-export { get_total_tx_fee_reward_of_epoch };
-export { get_total_eth_supply_of_epoch };
+export { get_total_tx_fee_reward_of_period as get_total_tx_fee_reward_of_epoch };
+export { get_total_eth_supply_of_period };
 
 /** Export frequently used variables */
 const chainId: any = process.env.CHAIN_ID ?? DEFAULT_CHAIN_ID;

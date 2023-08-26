@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
-import { url, apiKey } from "./";
+import { url, apiKey } from ".";
 import { output } from "../../utils";
 
 /**
@@ -9,7 +9,7 @@ import { output } from "../../utils";
  * @param _epoch object of type 'Epoch'. See 'scripts/interfaces/Epoch.ts' for more details
  * @returns the @param _epoch but with updated property 'totalTxFee'
  */
-export default async function get_total_tx_fee_reward_of_epoch(_epoch: Epoch)
+export default async function get_total_tx_fee_reward_of_period(_epoch: Epoch)
 : Promise<boolean> {
     try {
         let sum: bigint = 0n;
@@ -55,7 +55,7 @@ export default async function get_total_tx_fee_reward_of_epoch(_epoch: Epoch)
 }
 
 // Test
-// get_total_tx_fee_reward_of_epoch(exampleEpoch).then((success) => {
+// get_total_tx_fee_reward_of_period(exampleEpoch).then((success) => {
 //     if (success) {
 //         console.log(`Total txFee of epoch ${exampleEpoch.epoch_number} = ${exampleEpoch.total_tx_fee}`);
 //     }

@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
-import { url } from "./";
+import { url } from ".";
 import { constants } from "../../01_constants";
 import { output } from "../../utils";
 

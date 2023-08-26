@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from "axios";
 import { Epoch, exampleEpoch } from "../../interfaces";
-import { url, apiKey } from "./";
+import { url, apiKey } from ".";
 import { log } from "../../utils";
 
 const logPath: string = "data/logs/get_total_eth_supply.ts.log";
@@ -9,7 +9,7 @@ const logPath: string = "data/logs/get_total_eth_supply.ts.log";
  * @param _epoch Object of type 'Epoch'. See 'scripts/interfaces/Epoch.ts' for more details
  * @returns the @param _epoch with updated totalEthSupply property
  */
-export default async function get_total_eth_supply_of_epoch(_epoch: Epoch): Promise<Epoch> {
+export default async function get_total_eth_supply_of_period(_epoch: Epoch): Promise<Epoch> {
 	try {
 		const supplyResponse: AxiosResponse = await axios.get(
 			`${url}/?module=stats&action=ethsupply2&apikey=${apiKey}`
