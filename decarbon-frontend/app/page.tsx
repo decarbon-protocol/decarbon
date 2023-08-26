@@ -38,13 +38,12 @@ const formSchema = z.object({
 });
 
 function lineDataToChartOptions(from: Date, to: Date, lineData: LineChartData) {
-  const dif = differenceInDays(to, from);
-  const labels = new Array(dif)
-    .fill(0)
-    .map((_, index) => format(addDays(from, index), "dd/MM"));
+  const keyByDate = map(groupBy(lineData, "date_actual"), (_, key) =>
+    format(new Date(key), "dd/MM/yyyy")
+  );
   const groupByAddress = omit(groupBy(lineData, "address"), "null");
   return {
-    labels: labels.map(truncateEthAddress),
+    labels: keyByDate,
     datasets: map(groupByAddress, (groupAsArray, address) => {
       const color = faker.color.rgb();
       return {
