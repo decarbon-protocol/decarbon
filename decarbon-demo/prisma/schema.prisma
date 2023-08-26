@@ -27,9 +27,9 @@ model blocks {
 model d_account {
   account_id                                                BigInt         @default(autoincrement())
   address                                                   String         @id
-  eth_sent                                                  Float?       
-  eth_received                                              Float?       
-  account_balance                                           Float?
+  eth_sent                                                  Decimal?       @db.Decimal(38, 0)       
+  eth_received                                              Decimal?       @db.Decimal(38, 0)       
+  account_balance                                           Decimal?       @db.Decimal(38, 0)
   f_blockchain_f_blockchain_account_from_addressTod_account f_blockchain[] @relation("f_blockchain_account_from_addressTod_account") @ignore
   f_blockchain_f_blockchain_account_to_addressTod_account   f_blockchain[] @relation("f_blockchain_account_to_addressTod_account") @ignore
 }
