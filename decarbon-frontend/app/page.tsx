@@ -1,10 +1,10 @@
 "use client";
 
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Form,
   FormControl,
@@ -13,13 +13,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { zodResolver } from '@hookform/resolvers/zod';
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { zodResolver } from "@hookform/resolvers/zod";
+import LineChart from "./components/line-chart";
+import { faker } from "@faker-js/faker";
+import { useState } from "react";
+import { LineChartData } from "./types/api.model";
+import AddressInteractiveTable from "./components/address-interactive-table";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
 });
+const labels = ["January", "February", "March", "April", "May", "June", "July"];
+
+const data = {
+  labels,
+  datasets: [
+    {
+      label: "Dataset 1",
+      data: labels.map(() => faker.number.int({ min: -1000, max: 1000 })),
+      borderColor: "rgb(255, 99, 132)",
+      backgroundColor: "rgba(255, 99, 132, 0.5)",
+    },
+    {
+      label: "Dataset 2",
+      data: labels.map(() => faker.number.int({ min: -1000, max: 1000 })),
+      borderColor: "rgb(53, 162, 235)",
+      backgroundColor: "rgba(53, 162, 235, 0.5)",
+    },
+  ],
+};
 
 export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
@@ -28,9 +52,13 @@ export default function Home() {
       address: "0x71C7656EC7ab88b098defB751B7401B5f6d8976F",
     },
   });
+  const [tableData, setTableData] = useState<LineChartData>();
+  const [lineData, setLineData] = useState(data);
 
-  const onSubmit = () => {
-    console.log("Submit");
+  const onSubmit = async () => {
+    const response = await fetch("/api/user");
+    const json: LineChartData = await response.json();
+    setTableData(json);
   };
 
   return (
@@ -64,7 +92,16 @@ export default function Home() {
           </form>
         </Form>
       </Card>
-      <Card className="p-4">Your result goes here!</Card>
+      <section className="flex gap-8 w-full">
+        <Card className="p-4 w-5/12">
+          <LineChart data={lineData} />
+        </Card>
+        {tableData && (
+          <Card className="p-4 w-7/12">
+            <AddressInteractiveTable data={tableData} />
+          </Card>
+        )}
+      </section>
     </main>
   );
 }
