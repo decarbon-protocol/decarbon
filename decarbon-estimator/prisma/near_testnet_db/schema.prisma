@@ -1,0 +1,9 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/minh_db
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NEAR_TESTNET_DATABASE_URL")
+}

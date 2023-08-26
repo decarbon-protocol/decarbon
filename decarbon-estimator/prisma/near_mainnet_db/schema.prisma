@@ -1,0 +1,9 @@
+generator client {
+  provider = "prisma-client-js"
+  output = "../generated/near_mainnet_db"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("NEAR_MAINNET_DATABASE_URL")
+}
