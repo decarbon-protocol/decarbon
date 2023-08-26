@@ -7,49 +7,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LineChartData } from "../types/api.model";
+import { LineChartData, TableData } from "../types/api.model";
 import { groupBy, map, omit, orderBy, sumBy } from "lodash";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
-export default function AddressInteractiveTable({
-  data,
-}: {
-  data: LineChartData;
-}) {
-  const { sortedByGhg, sumGhg, total80, percentage80Index } =
-    convertLineChartData(data);
+// Captures 0x + 4 characters, then the last 4 characters.
+const truncateRegex = /^(0x[a-zA-Z0-9]{8})[a-zA-Z0-9]+([a-zA-Z0-9]{8})$/;
 
+/**
+ * Truncates an ethereum address to the format 0x0000…0000
+ * @param address Full address to truncate
+ * @returns Truncated address
+ */
+const truncateEthAddress = (address: string) => {
+  const match = address.match(truncateRegex);
+  if (!match) return address;
+  return `${match[1]}…${match[2]}`;
+};
+
+export default function AddressInteractiveTable({ data }: { data: TableData }) {
   return (
-    <ScrollArea className="h-[27rem]">
+    <ScrollArea className="h-[80vh]">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-32"></TableHead>
+            <TableHead className="w-48"></TableHead>
             <TableHead>Address</TableHead>
             <TableHead className="text-right">GHG Emission</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {sortedByGhg.map(({ address, ghg }, i) => (
+          {data.map(({ address, ghg_emission, ghg_emission_group }, i) => (
             <TableRow key={address}>
               <TableCell className="font-medium">
-                {i === 0 ? (
-                  <strong className="text-red-500">Red Level (Top 80%)</strong>
+                {ghg_emission_group === "Top_20" ? (
+                  <span className="text-red-500">Red (Top 80%)</span>
                 ) : (
                   ""
                 )}
-                {i === percentage80Index + 1 ? (
-                  <strong className="text-green-600">
-                    Green level (Bottom 20%)
-                  </strong>
+                {ghg_emission_group === "The_rest" ? (
+                  <span className="text-green-600">Green (Bottom 20%)</span>
                 ) : (
                   ""
                 )}
               </TableCell>
-              <TableCell>{address}</TableCell>
+              <TableCell>
+                <span title={address}>{truncateEthAddress(address)}</span>
+              </TableCell>
               <TableCell className="text-right">
                 {(
-                  Math.round((ghg + Number.EPSILON) * 1000000) / 1000000
+                  Math.round(
+                    (Number(ghg_emission) + Number.EPSILON) * 1000000
+                  ) / 1000000
                 ).toFixed(6)}
               </TableCell>
             </TableRow>

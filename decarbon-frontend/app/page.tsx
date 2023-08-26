@@ -8,7 +8,6 @@ import { Card } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -16,13 +15,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import LineChart from "./components/line-chart";
+import LineChart, { truncateEthAddress } from "./components/line-chart";
 import { faker } from "@faker-js/faker";
-import { useState } from "react";
-import { LineChartData } from "./types/api.model";
+import { useEffect, useState } from "react";
+import { LineChartData, TableData } from "./types/api.model";
 import AddressInteractiveTable from "./components/address-interactive-table";
-import { addDays, format } from "date-fns";
-import { Calendar as CalendarIcon } from "lucide-react";
+import { addDays, differenceInDays, format } from "date-fns";
+import { Calendar as CalendarIcon, SearchIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -32,30 +31,31 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { groupBy, map, omit } from "lodash";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
 });
-const labels = ["January", "February", "March", "April", "May", "June", "July"];
 
-const data = {
-  labels,
-  datasets: [
-    {
-      label: "Dataset 1",
-      data: labels.map(() => faker.number.int({ min: -1000, max: 1000 })),
-      borderColor: "rgb(255, 99, 132)",
-      backgroundColor: "rgba(255, 99, 132, 0.5)",
-    },
-    {
-      label: "Dataset 2",
-      data: labels.map(() => faker.number.int({ min: -1000, max: 1000 })),
-      borderColor: "rgb(53, 162, 235)",
-      backgroundColor: "rgba(53, 162, 235, 0.5)",
-    },
-  ],
-};
-
+function lineDataToChartOptions(from: Date, to: Date, lineData: LineChartData) {
+  const dif = differenceInDays(to, from);
+  const labels = new Array(dif)
+    .fill(0)
+    .map((_, index) => format(addDays(from, index), "dd/MM"));
+  const groupByAddress = omit(groupBy(lineData, "address"), "null");
+  return {
+    labels: labels.map(truncateEthAddress),
+    datasets: map(groupByAddress, (groupAsArray, address) => {
+      const color = faker.color.rgb();
+      return {
+        label: address,
+        data: groupAsArray.map((item) => Number(item.ghg_emission)),
+        borderColor: color,
+        backgroundColor: color,
+      };
+    }),
+  };
+}
 export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -64,97 +64,117 @@ export default function Home() {
     },
   });
   const [date, setDate] = useState<DateRange | undefined>({
-    from: new Date(2022, 0, 20),
-    to: addDays(new Date(2022, 0, 20), 20),
+    from: new Date("2023-08-26"),
+    to: new Date("2023-08-28"),
   });
-  const [tableData, setTableData] = useState<LineChartData>();
-  const [lineData, setLineData] = useState(data);
+  const [tableData, setTableData] = useState<TableData>();
+  const [lineData, setLineData] = useState<LineChartData>();
+
+  useEffect(() => {
+    fetch(`/api/table`)
+      .then((r) => r.json())
+      .then((json) => setTableData(json));
+
+    fetch(`/api/line`)
+      .then((r) => r.json())
+      .then((json) => setLineData(json));
+  }, []);
 
   const onSubmit = async () => {
-    const response = await fetch("/api/user");
+    const query =
+      date?.from && date.to
+        ? `?from=${format(date.from, "yyyy-MM-dd")}&to=${format(
+            date.to,
+            "yyyy-MM-dd"
+          )}`
+        : "";
+    const response = await fetch(`/api/line${query}`);
     const json: LineChartData = await response.json();
-    setTableData(json);
+    setLineData(json);
   };
 
   return (
-    <main className="min-h-screen flex flex-col items-center gap-8 p-4 md:p-8">
-      <Card className="p-4">
-        <Form {...form}>
-          <form
-            onSubmit={form.handleSubmit(onSubmit)}
-            className="w-fit flex gap-4"
-          >
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem className="w-full md:w-96">
-                  <FormLabel>ETH Address</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Enter your address to check the carbon emission!
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid gap-2 mt-8">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    id="date"
-                    variant={"outline"}
-                    className={cn(
-                      "w-[16rem] justify-start text-left font-normal",
-                      !date && "text-muted-foreground"
-                    )}
-                  >
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {date?.from ? (
-                      date.to ? (
-                        <>
-                          {format(date.from, "LLL dd, y")} -{" "}
-                          {format(date.to, "LLL dd, y")}
-                        </>
+    <main className="min-h-screen flex items-center gap-8 p-4 md:p-8">
+      <section className="flex flex-col gap-4 w-1/2">
+        <Card className="p-4">
+          <Form {...form}>
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="w-fit flex items-end gap-4"
+            >
+              <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                  <FormItem className="w-full md:w-80">
+                    <FormLabel>ETH Address</FormLabel>
+                    <FormControl>
+                      <Input
+                        placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
+                        {...field}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <div className="grid gap-2 ">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      id="date"
+                      variant={"outline"}
+                      className={cn(
+                        "w-[15rem] justify-start text-left font-normal",
+                        !date && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {date?.from ? (
+                        date.to ? (
+                          <>
+                            {format(date.from, "dd/MM/yyyy")} -{" "}
+                            {format(date.to, "dd/MM/yyyy")}
+                          </>
+                        ) : (
+                          format(date.from, "dd/MM/yyyy")
+                        )
                       ) : (
-                        format(date.from, "LLL dd, y")
-                      )
-                    ) : (
-                      <span>Pick a date</span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    initialFocus
-                    mode="range"
-                    defaultMonth={date?.from}
-                    selected={date}
-                    onSelect={setDate}
-                    numberOfMonths={2}
-                  />
-                </PopoverContent>
-              </Popover>
-            </div>
-            <Button className="mt-8">Submit</Button>
-          </form>
-        </Form>
-      </Card>
-      <section className="flex gap-8 w-full">
-        <Card className="p-4 w-5/12">
-          <LineChart data={lineData} />
+                        <span>Pick a date</span>
+                      )}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      initialFocus
+                      mode="range"
+                      defaultMonth={date?.from}
+                      selected={date}
+                      onSelect={setDate}
+                      numberOfMonths={2}
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Button size="icon">
+                <SearchIcon></SearchIcon>
+              </Button>
+            </form>
+          </Form>
         </Card>
-        {tableData && (
-          <Card className="p-4 w-7/12">
-            <AddressInteractiveTable data={tableData} />
-          </Card>
-        )}
+        <Card className="p-4 w-full">
+          {date?.from && date.to && lineData && (
+            <LineChart
+              data={lineDataToChartOptions(date.from, date.to, lineData)}
+            />
+          )}
+        </Card>
       </section>
+      {tableData && (
+        <Card className="p-4 w-1/2">
+          <AddressInteractiveTable data={tableData} />
+        </Card>
+      )}
     </main>
   );
 }
