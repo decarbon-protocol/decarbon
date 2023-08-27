@@ -15,16 +15,16 @@ jobs:
           username: ${{secrets.SSH_USER}} # User of the server you want to ssh into
           port: ${{secrets.PORT}}
           script: |
-            # pm2 stop all
-            # pm2 delete all
+            cd ~/production/decarbon/decarbon-demo/
+            cat deployedTime.txt
             npm run stop-estimator
-            cd ~
-            rm -rf production
-            mkdir production
-            cd production
-            git clone git@github.com:decarbon-protocol/decarbon.git
+            cd ~/production
+            git checkout main
+            git pull
             cd decarbon
             cd decarbon-demo
-            echo "test" > test.txt
+            rm -rf deployedTime.txt
+            echo $(date +'%m/%d/%Y/%T') > deployedTime.txt
+            cat deployedTime.txt
             npm run start-estimator
-            # pm2 start build/estimate/execute/main_thread.js
+            ps -aef | grep node
