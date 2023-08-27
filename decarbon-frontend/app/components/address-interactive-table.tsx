@@ -27,7 +27,7 @@ const truncateEthAddress = (address: string) => {
 
 export default function AddressInteractiveTable({ data }: { data: TableData }) {
   return (
-    <ScrollArea className="h-[80vh]">
+    <ScrollArea className="pr-2">
       <Table>
         <TableHeader>
           <TableRow>

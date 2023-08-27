@@ -14,8 +14,10 @@ declare global {
   return String(this);
 };
 
-export async function GET(req: NextApiRequest) {
-  const { from = "2023-08-26", to = "2023-08-28" } = req.query || {};
+export async function GET({ url }: NextApiRequest) {
+  const searchParams = url && new URL(url).searchParams;
+  const from = (searchParams && searchParams.get("from")) || "2023-05-29";
+  const to = (searchParams && searchParams.get("to")) || "2023-06-08";
   const result: LineChartData =
     await prisma.$queryRaw`SELECT * FROM get_line_chart_data(${from}, ${to})`;
   return NextResponse.json(result);

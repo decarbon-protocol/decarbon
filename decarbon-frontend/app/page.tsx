@@ -93,87 +93,92 @@ export default function Home() {
   };
 
   return (
-    <main className="min-h-screen flex items-center gap-8 p-4 md:p-8">
-      <section className="flex flex-col gap-4 w-1/2">
-        <Card className="p-4">
-          <Form {...form}>
-            <form
-              onSubmit={form.handleSubmit(onSubmit)}
-              className="w-fit flex items-end gap-4"
-            >
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }) => (
-                  <FormItem className="w-full md:w-80">
-                    <FormLabel>ETH Address</FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
-                        {...field}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <div className="grid gap-2 ">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      id="date"
-                      variant={"outline"}
-                      className={cn(
-                        "w-[15rem] justify-start text-left font-normal",
-                        !date && "text-muted-foreground"
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {date?.from ? (
-                        date.to ? (
-                          <>
-                            {format(date.from, "dd/MM/yyyy")} -{" "}
-                            {format(date.to, "dd/MM/yyyy")}
-                          </>
+    <main className="min-h-screen p-4 md:p-8">
+      <h1 className="text-center text-4xl font-bold mb-4">
+        Etherium Carbon Emission Dashboard
+      </h1>
+      <div className="flex items-start gap-8 ">
+        <section className="flex flex-col gap-4 w-1/2">
+          <Card className="p-4">
+            <Form {...form}>
+              <form
+                onSubmit={form.handleSubmit(onSubmit)}
+                className="w-fit flex flex-wrap items-end gap-4"
+              >
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }) => (
+                    <FormItem className="w-full md:w-80">
+                      <FormLabel>ETH Address</FormLabel>
+                      <FormControl>
+                        <Input
+                          placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
+                          {...field}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="grid gap-2 ">
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        id="date"
+                        variant={"outline"}
+                        className={cn(
+                          "w-[15rem] justify-start text-left font-normal",
+                          !date && "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {date?.from ? (
+                          date.to ? (
+                            <>
+                              {format(date.from, "dd/MM/yyyy")} -{" "}
+                              {format(date.to, "dd/MM/yyyy")}
+                            </>
+                          ) : (
+                            format(date.from, "dd/MM/yyyy")
+                          )
                         ) : (
-                          format(date.from, "dd/MM/yyyy")
-                        )
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      initialFocus
-                      mode="range"
-                      defaultMonth={date?.from}
-                      selected={date}
-                      onSelect={setDate}
-                      numberOfMonths={2}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              <Button size="icon">
-                <SearchIcon></SearchIcon>
-              </Button>
-            </form>
-          </Form>
-        </Card>
-        <Card className="p-4 w-full">
-          {date?.from && date.to && lineData && (
-            <LineChart
-              data={lineDataToChartOptions(date.from, date.to, lineData)}
-            />
-          )}
-        </Card>
-      </section>
-      {tableData && (
-        <Card className="p-4 w-1/2">
-          <AddressInteractiveTable data={tableData} />
-        </Card>
-      )}
+                          <span>Pick a date</span>
+                        )}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        initialFocus
+                        mode="range"
+                        defaultMonth={date?.from}
+                        selected={date}
+                        onSelect={setDate}
+                        numberOfMonths={2}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+                <Button size="icon">
+                  <SearchIcon></SearchIcon>
+                </Button>
+              </form>
+            </Form>
+          </Card>
+          <Card className="p-4 w-full">
+            {date?.from && date.to && lineData && (
+              <LineChart
+                data={lineDataToChartOptions(date.from, date.to, lineData)}
+              />
+            )}
+          </Card>
+        </section>
+        {tableData && (
+          <Card className="p-4 w-1/2">
+            <AddressInteractiveTable data={tableData} />
+          </Card>
+        )}
+      </div>
     </main>
   );
 }
