@@ -38,10 +38,6 @@ import {
   WalletSelector,
   setupWalletSelector,
 } from "@near-wallet-selector/core";
-import {
-  WalletSelectorModal,
-  setupModal,
-} from "@near-wallet-selector/modal-ui";
 import { setupNearWallet } from "@near-wallet-selector/near-wallet";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupCoin98Wallet } from "@near-wallet-selector/coin98-wallet";
@@ -49,9 +45,6 @@ import { setupSender } from "@near-wallet-selector/sender";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMathWallet } from "@near-wallet-selector/math-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
-import { setupWalletConnect } from "@near-wallet-selector/wallet-connect";
-
-import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
@@ -89,9 +82,7 @@ export default function Home() {
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
   const [walletSelector, setWalletSelector] = useState<WalletSelector>();
-  const [modal, setModal] = useState<WalletSelectorModal>();
   const [account, setAccount] = useState<Account>();
-  const searchParams = useSearchParams(); // catch account_id, public_key
 
   useEffect(() => {
     fetch(`/api/table`)
@@ -112,22 +103,10 @@ export default function Home() {
         setupMathWallet(),
         setupNightly(),
         setupLedger(),
-        setupWalletConnect({
-          projectId: "c4f79cc...",
-          metadata: {
-            name: "NEAR Wallet Selector",
-            description: "Example dApp used by NEAR Wallet Selector",
-            url: "https://github.com/near/wallet-selector",
-            icons: ["https://avatars.githubusercontent.com/u/37784886"],
-          },
-        }),
       ],
-    })
-      .then((selector) => {
-        setWalletSelector(selector);
-        return setupModal(selector, { contractId: "test.testnet" });
-      })
-      .then((modal) => setModal(modal));
+    }).then((selector) => {
+      setWalletSelector(selector);
+    });
   }, []);
 
   const onSubmit = async () => {
@@ -146,7 +125,7 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <h1 className="text-center text-4xl font-bold mb-4">
-        Etherium Carbon Emission Dashboard
+        Ethereum Carbon Emission Dashboard
       </h1>
 
       {walletSelector?.isSignedIn() && account ? (

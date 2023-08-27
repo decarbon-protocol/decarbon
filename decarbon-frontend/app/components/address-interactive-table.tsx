@@ -10,6 +10,7 @@ import {
 import { LineChartData, TableData } from "../types/api.model";
 import { groupBy, map, omit, orderBy, sumBy } from "lodash";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LucideExternalLink } from "lucide-react";
 
 // Captures 0x + 4 characters, then the last 4 characters.
 const truncateRegex = /^(0x[a-zA-Z0-9]{8})[a-zA-Z0-9]+([a-zA-Z0-9]{8})$/;
@@ -52,7 +53,16 @@ export default function AddressInteractiveTable({ data }: { data: TableData }) {
                 )}
               </TableCell>
               <TableCell>
-                <span title={address}>{truncateEthAddress(address)}</span>
+                <a
+                  href={`https://etherscan.io/address/${address}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  title={address}
+                  className="inline-flex gap-1 hover:text-blue-500"
+                >
+                  {truncateEthAddress(address)}
+                  <LucideExternalLink className="w-4 h-4"></LucideExternalLink>
+                </a>
               </TableCell>
               <TableCell className="text-right">
                 {(
