@@ -3,13 +3,12 @@ import {
   Chart as ChartJS,
   LinearScale,
   CategoryScale,
-  BarElement,
   PointElement,
   LineElement,
   Legend,
   Tooltip,
   LineController,
-  BarController,
+  BubbleController,
   ChartData,
 } from "chart.js";
 import { Chart } from "react-chartjs-2";
@@ -21,13 +20,12 @@ import { format } from "date-fns";
 ChartJS.register(
   LinearScale,
   CategoryScale,
-  BarElement,
   PointElement,
   LineElement,
   Legend,
   Tooltip,
   LineController,
-  BarController
+  BubbleController
 );
 
 export default function BubbleChart({ data }: { data: BubbleChartData }) {
