@@ -17,9 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LineChart, { truncateAddress } from "./components/line-chart";
-import { faker } from "@faker-js/faker";
 import { useEffect, useState } from "react";
-import { LineChartData, TableData } from "./types/api.model";
+import { BubbleChartData, LineChartData, TableData } from "./types/api.model";
 import AddressInteractiveTable from "./components/address-interactive-table";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, SearchIcon, WalletIcon } from "lucide-react";
@@ -32,7 +31,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { groupBy, map, omit } from "lodash";
 import {
   Account,
   WalletSelector,
@@ -45,29 +43,11 @@ import { setupSender } from "@near-wallet-selector/sender";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMathWallet } from "@near-wallet-selector/math-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
+import BubbleChart from "./components/bubble-chart";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
 });
-
-function lineDataToChartOptions(from: Date, to: Date, lineData: LineChartData) {
-  const keyByDate = map(groupBy(lineData, "date_actual"), (_, key) =>
-    format(new Date(key), "dd/MM/yyyy")
-  );
-  const groupByAddress = omit(groupBy(lineData, "address"), "null");
-  return {
-    labels: keyByDate,
-    datasets: map(groupByAddress, (groupAsArray, address) => {
-      const color = faker.color.rgb();
-      return {
-        label: address,
-        data: groupAsArray.map((item) => Number(item.ghg_emission)),
-        borderColor: color,
-        backgroundColor: color,
-      };
-    }),
-  };
-}
 export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -81,6 +61,7 @@ export default function Home() {
   });
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
+  const [bubbleData, setBubbleData] = useState<BubbleChartData>();
   const [walletSelector, setWalletSelector] = useState<WalletSelector>();
   const [account, setAccount] = useState<Account>();
 
@@ -92,6 +73,10 @@ export default function Home() {
     fetch(`/api/line`)
       .then((r) => r.json())
       .then((json) => setLineData(json));
+
+    fetch(`/api/bubble`)
+      .then((r) => r.json())
+      .then((json) => setBubbleData(json));
 
     setupWalletSelector({
       network: "testnet",
@@ -227,18 +212,17 @@ export default function Home() {
             </Form>
           </Card>
           <Card className="p-4 w-full">
-            {date?.from && date.to && lineData && (
-              <LineChart
-                data={lineDataToChartOptions(date.from, date.to, lineData)}
-              />
-            )}
+            {date?.from && date.to && lineData && <LineChart data={lineData} />}
           </Card>
         </section>
-        {tableData && (
-          <Card className="p-4 w-1/2">
-            <AddressInteractiveTable data={tableData} />
-          </Card>
-        )}
+        <section className="flex flex-col w-1/2">
+          {bubbleData && <BubbleChart data={bubbleData} />}
+          {tableData && (
+            <Card className="p-4 w-full">
+              <AddressInteractiveTable data={tableData} />
+            </Card>
+          )}
+        </section>
       </div>
     </main>
   );
