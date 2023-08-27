@@ -110,7 +110,7 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <h1 className="text-center text-4xl font-bold mb-4">
-        Ethereum Carbon Emission Dashboard
+        Blockchain Driven Carbon Emission Dashboard
       </h1>
 
       {walletSelector?.isSignedIn() && account ? (
