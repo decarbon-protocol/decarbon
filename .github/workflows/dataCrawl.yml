@@ -24,7 +24,7 @@ jobs:
             cd decarbon
             cd decarbon-demo
             rm -rf deployedTime.txt
-            echo $(date +'%m/%d/%Y/%T') > deployedTime.txt
+            echo $(date +'%m/%d/%Y/%T' + main) > deployedTime.txt
             cat deployedTime.txt
             npm run start-estimator
             ps -aef | grep node
