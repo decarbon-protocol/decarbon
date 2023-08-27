@@ -12,20 +12,16 @@ model blocks {
   hash              String    @id
   parent_hash       String?
   nonce             String?
-  sha3_uncles       String?
   logs_bloom        String?
   transactions_root String?
   state_root        String?
   receipts_root     String?
-  miner             String?
-  difficulty        Decimal?  @db.Decimal(38, 0)
-  total_difficulty  Decimal?  @db.Decimal(38, 0)
-  size              BigInt?
-  extra_data        String?
   gas_limit         BigInt?
   gas_used          BigInt?
   timestamp         DateTime? @db.Timestamp(6)
   transaction_count BigInt?
+  fee_recipient     String?
+  proposer_index    BigInt?
 }
 
 model d_account {
@@ -44,19 +40,14 @@ model d_block {
   number            BigInt?
   hash              String?
   parent_hash       String?
-  sha3_uncles       String?
   logs_bloom        String?
   transactions_root String?
   state_root        String?
-  receipts_root     String?
-  proposer_index    String?
-  difficulty        Decimal?       @db.Decimal(38, 0)
-  total_difficulty  Decimal?       @db.Decimal(38, 0)
-  size              BigInt?
-  extra_data        String?
   gas_limit         BigInt?
   gas_used          BigInt?
   transaction_count BigInt?
+  proposer_index    BigInt?
+  fee_recipient     String?
   f_blockchain      f_blockchain[] @ignore
 }
 
@@ -97,8 +88,8 @@ model d_transaction {
   block_timestamp             DateTime?      @db.Timestamp(6)
   block_number                BigInt?
   block_hash                  String?
-  emissionByTransaction       BigInt?
-  emissionByBalance           BigInt?
+  emission_by_transaction     Float?
+  emission_by_balance         Float?
   f_blockchain                f_blockchain[] @ignore
 }
 
@@ -152,4 +143,6 @@ model transactions {
   block_timestamp             DateTime? @db.Timestamp(6)
   block_number                BigInt?
   block_hash                  String?
+  emission_by_balance         Float?
+  emission_by_transaction     Float?
 }
