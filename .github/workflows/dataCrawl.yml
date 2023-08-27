@@ -16,11 +16,12 @@ jobs:
           port: ${{secrets.PORT}}
           script: |
             cd ~/production/decarbon/decarbon-demo/
-            cat deployedTime.txt
+            println deployedTime.txt
             npm run stop-estimator
-            cd ~/production
-            git checkout main
-            git pull
+            cd ~
+            rm -rf production
+            mkdir production
+            git@github.com:decarbon-protocol/decarbon.git
             cd decarbon
             cd decarbon-demo
             rm -rf deployedTime.txt
