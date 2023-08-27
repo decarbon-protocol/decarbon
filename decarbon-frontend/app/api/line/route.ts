@@ -1,8 +1,7 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
 import prisma from "@/lib/prisma";
 import { LineChartData } from "@/app/types/api.model";
-import { NextApiRequest } from "next";
 
 declare global {
   interface BigInt {
@@ -14,7 +13,7 @@ declare global {
   return String(this);
 };
 
-export async function GET({ url }: NextApiRequest) {
+export async function GET({ url }: NextRequest) {
   const searchParams = url && new URL(url).searchParams;
   const from = (searchParams && searchParams.get("from")) || "2023-05-29";
   const to = (searchParams && searchParams.get("to")) || "2023-06-08";
