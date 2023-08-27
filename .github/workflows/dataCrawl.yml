@@ -18,6 +18,7 @@ jobs:
             cd ~
             rm -rf production
             mkdir production
+            cd production
             git clone git@github.com:decarbon-protocol/decarbon.git
             cd decarbon
             cd decarbon-demo
