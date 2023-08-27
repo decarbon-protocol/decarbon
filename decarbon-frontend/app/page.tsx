@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import "@near-wallet-selector/modal-ui/styles.css";
 
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -15,13 +16,13 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-import LineChart, { truncateEthAddress } from "./components/line-chart";
+import LineChart, { truncateAddress } from "./components/line-chart";
 import { faker } from "@faker-js/faker";
 import { useEffect, useState } from "react";
 import { LineChartData, TableData } from "./types/api.model";
 import AddressInteractiveTable from "./components/address-interactive-table";
-import { addDays, differenceInDays, format } from "date-fns";
-import { Calendar as CalendarIcon, SearchIcon } from "lucide-react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon, SearchIcon, WalletIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -32,6 +33,25 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { groupBy, map, omit } from "lodash";
+import {
+  Account,
+  WalletSelector,
+  setupWalletSelector,
+} from "@near-wallet-selector/core";
+import {
+  WalletSelectorModal,
+  setupModal,
+} from "@near-wallet-selector/modal-ui";
+import { setupNearWallet } from "@near-wallet-selector/near-wallet";
+import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
+import { setupCoin98Wallet } from "@near-wallet-selector/coin98-wallet";
+import { setupSender } from "@near-wallet-selector/sender";
+import { setupLedger } from "@near-wallet-selector/ledger";
+import { setupMathWallet } from "@near-wallet-selector/math-wallet";
+import { setupNightly } from "@near-wallet-selector/nightly";
+import { setupWalletConnect } from "@near-wallet-selector/wallet-connect";
+
+import { useSearchParams } from "next/navigation";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
@@ -68,6 +88,10 @@ export default function Home() {
   });
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
+  const [walletSelector, setWalletSelector] = useState<WalletSelector>();
+  const [modal, setModal] = useState<WalletSelectorModal>();
+  const [account, setAccount] = useState<Account>();
+  const searchParams = useSearchParams(); // catch account_id, public_key
 
   useEffect(() => {
     fetch(`/api/table`)
@@ -77,6 +101,33 @@ export default function Home() {
     fetch(`/api/line`)
       .then((r) => r.json())
       .then((json) => setLineData(json));
+
+    setupWalletSelector({
+      network: "testnet",
+      modules: [
+        setupNearWallet(),
+        setupMyNearWallet(),
+        setupCoin98Wallet(),
+        setupSender(),
+        setupMathWallet(),
+        setupNightly(),
+        setupLedger(),
+        setupWalletConnect({
+          projectId: "c4f79cc...",
+          metadata: {
+            name: "NEAR Wallet Selector",
+            description: "Example dApp used by NEAR Wallet Selector",
+            url: "https://github.com/near/wallet-selector",
+            icons: ["https://avatars.githubusercontent.com/u/37784886"],
+          },
+        }),
+      ],
+    })
+      .then((selector) => {
+        setWalletSelector(selector);
+        return setupModal(selector, { contractId: "test.testnet" });
+      })
+      .then((modal) => setModal(modal));
   }, []);
 
   const onSubmit = async () => {
@@ -97,6 +148,37 @@ export default function Home() {
       <h1 className="text-center text-4xl font-bold mb-4">
         Etherium Carbon Emission Dashboard
       </h1>
+
+      {walletSelector?.isSignedIn() && account ? (
+        <Button
+          className="fixed top-4 right-4 z-10"
+          onClick={async () => {
+            const wallet = await walletSelector.wallet("my-near-wallet");
+            await wallet.signOut();
+            setAccount(undefined);
+          }}
+        >
+          {truncateAddress(account.accountId)}
+        </Button>
+      ) : (
+        <Button
+          className="fixed top-4 right-4 z-10"
+          onClick={async () => {
+            if (!walletSelector) return;
+            const wallet = await walletSelector.wallet("my-near-wallet");
+            const accounts = await wallet.signIn({
+              contractId: "test.testnet",
+              accounts: [],
+            });
+            console.log(accounts);
+
+            if (accounts?.length > 0) setAccount(accounts[0]);
+          }}
+        >
+          <span className="mr-2">Login with NEAR</span>
+          <WalletIcon></WalletIcon>
+        </Button>
+      )}
       <div className="flex items-start gap-8 ">
         <section className="flex flex-col gap-4 w-1/2">
           <Card className="p-4">
