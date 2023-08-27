@@ -8,11 +8,13 @@ import {
   Title,
   Tooltip,
   Legend,
-  ChartData,
   ChartOptions,
 } from "chart.js";
 import { Line } from "react-chartjs-2";
+import { LineChartData } from "../types/api.model";
 import { faker } from "@faker-js/faker";
+import { groupBy, map, omit } from "lodash";
+import { format } from "date-fns";
 
 ChartJS.register(
   CategoryScale,
@@ -38,7 +40,7 @@ export const truncateAddress = (address: string) => {
   return `${match[1]}…${match[2]}`;
 };
 
-export const options: ChartOptions = {
+export const options: ChartOptions<"line"> = {
   responsive: true,
   aspectRatio: 1 / 1.25,
   plugins: {
@@ -52,10 +54,25 @@ export const options: ChartOptions = {
   },
 };
 
-export default function LineChart({
-  data,
-}: {
-  data: ChartData<"line", number[], string>;
-}) {
-  return <Line options={options} data={data} />;
+export default function LineChart({ data }: { data: LineChartData }) {
+  return <Line options={options} data={lineDataToChartOptions(data)} />;
+}
+
+function lineDataToChartOptions(lineData: LineChartData) {
+  const keyByDate = map(groupBy(lineData, "date_actual"), (_, key) =>
+    format(new Date(key), "dd/MM/yyyy")
+  );
+  const groupByAddress = omit(groupBy(lineData, "address"), "null");
+  return {
+    labels: keyByDate,
+    datasets: map(groupByAddress, (groupAsArray, address) => {
+      const color = faker.color.rgb();
+      return {
+        label: address,
+        data: groupAsArray.map((item) => Number(item.ghg_emission)),
+        borderColor: color,
+        backgroundColor: color,
+      };
+    }),
+  };
 }

@@ -17,9 +17,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import LineChart, { truncateAddress } from "./components/line-chart";
-import { faker } from "@faker-js/faker";
 import { useEffect, useState } from "react";
-import { LineChartData, TableData } from "./types/api.model";
+import { BubbleChartData, LineChartData, TableData } from "./types/api.model";
 import AddressInteractiveTable from "./components/address-interactive-table";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon, SearchIcon, WalletIcon } from "lucide-react";
@@ -32,16 +31,11 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { groupBy, map, omit } from "lodash";
 import {
   Account,
   WalletSelector,
   setupWalletSelector,
 } from "@near-wallet-selector/core";
-import {
-  WalletSelectorModal,
-  setupModal,
-} from "@near-wallet-selector/modal-ui";
 import { setupNearWallet } from "@near-wallet-selector/near-wallet";
 import { setupMyNearWallet } from "@near-wallet-selector/my-near-wallet";
 import { setupCoin98Wallet } from "@near-wallet-selector/coin98-wallet";
@@ -49,32 +43,11 @@ import { setupSender } from "@near-wallet-selector/sender";
 import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMathWallet } from "@near-wallet-selector/math-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
-import { setupWalletConnect } from "@near-wallet-selector/wallet-connect";
-
-import { useSearchParams } from "next/navigation";
+import BubbleChart from "./components/bubble-chart";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
 });
-
-function lineDataToChartOptions(from: Date, to: Date, lineData: LineChartData) {
-  const keyByDate = map(groupBy(lineData, "date_actual"), (_, key) =>
-    format(new Date(key), "dd/MM/yyyy")
-  );
-  const groupByAddress = omit(groupBy(lineData, "address"), "null");
-  return {
-    labels: keyByDate,
-    datasets: map(groupByAddress, (groupAsArray, address) => {
-      const color = faker.color.rgb();
-      return {
-        label: address,
-        data: groupAsArray.map((item) => Number(item.ghg_emission)),
-        borderColor: color,
-        backgroundColor: color,
-      };
-    }),
-  };
-}
 export default function Home() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -88,10 +61,9 @@ export default function Home() {
   });
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
+  const [bubbleData, setBubbleData] = useState<BubbleChartData>();
   const [walletSelector, setWalletSelector] = useState<WalletSelector>();
-  const [modal, setModal] = useState<WalletSelectorModal>();
   const [account, setAccount] = useState<Account>();
-  const searchParams = useSearchParams(); // catch account_id, public_key
 
   useEffect(() => {
     fetch(`/api/table`)
@@ -101,6 +73,10 @@ export default function Home() {
     fetch(`/api/line`)
       .then((r) => r.json())
       .then((json) => setLineData(json));
+
+    fetch(`/api/bubble`)
+      .then((r) => r.json())
+      .then((json) => setBubbleData(json));
 
     setupWalletSelector({
       network: "testnet",
@@ -112,22 +88,10 @@ export default function Home() {
         setupMathWallet(),
         setupNightly(),
         setupLedger(),
-        setupWalletConnect({
-          projectId: "c4f79cc...",
-          metadata: {
-            name: "NEAR Wallet Selector",
-            description: "Example dApp used by NEAR Wallet Selector",
-            url: "https://github.com/near/wallet-selector",
-            icons: ["https://avatars.githubusercontent.com/u/37784886"],
-          },
-        }),
       ],
-    })
-      .then((selector) => {
-        setWalletSelector(selector);
-        return setupModal(selector, { contractId: "test.testnet" });
-      })
-      .then((modal) => setModal(modal));
+    }).then((selector) => {
+      setWalletSelector(selector);
+    });
   }, []);
 
   const onSubmit = async () => {
@@ -146,7 +110,7 @@ export default function Home() {
   return (
     <main className="min-h-screen p-4 md:p-8">
       <h1 className="text-center text-4xl font-bold mb-4">
-        Etherium Carbon Emission Dashboard
+        Blockchain Driven Carbon Emission Dashboard
       </h1>
 
       {walletSelector?.isSignedIn() && account ? (
@@ -248,18 +212,17 @@ export default function Home() {
             </Form>
           </Card>
           <Card className="p-4 w-full">
-            {date?.from && date.to && lineData && (
-              <LineChart
-                data={lineDataToChartOptions(date.from, date.to, lineData)}
-              />
-            )}
+            {date?.from && date.to && lineData && <LineChart data={lineData} />}
           </Card>
         </section>
-        {tableData && (
-          <Card className="p-4 w-1/2">
-            <AddressInteractiveTable data={tableData} />
-          </Card>
-        )}
+        <section className="flex flex-col w-1/2">
+          {bubbleData && <BubbleChart data={bubbleData} />}
+          {tableData && (
+            <Card className="p-4 w-full">
+              <AddressInteractiveTable data={tableData} />
+            </Card>
+          )}
+        </section>
       </div>
     </main>
   );
