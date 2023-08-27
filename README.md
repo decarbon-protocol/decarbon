@@ -1,2 +1,2 @@
 # decarbon
-Decarbon Protocal
+Decarbon Protocol
