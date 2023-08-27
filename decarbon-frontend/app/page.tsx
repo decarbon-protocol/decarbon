@@ -156,7 +156,7 @@ export default function Home() {
                   name="address"
                   render={({ field }) => (
                     <FormItem className="w-full md:w-80">
-                      <FormLabel>ETH Address</FormLabel>
+                      <FormLabel>Address</FormLabel>
                       <FormControl>
                         <Input
                           placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"

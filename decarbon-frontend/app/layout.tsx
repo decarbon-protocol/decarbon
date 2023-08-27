@@ -7,7 +7,7 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Decarbon",
-  description: "Decarbon calculator for all ETH addresses",
+  description: "Decarbon calculator for all addresses",
 };
 
 export default function RootLayout({
