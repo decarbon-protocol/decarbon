@@ -17,6 +17,7 @@ jobs:
           script: |
             # pm2 stop all
             # pm2 delete all
+            npm run stop-estimator
             cd ~
             rm -rf production
             mkdir production
@@ -25,6 +26,5 @@ jobs:
             cd decarbon
             cd decarbon-demo
             echo "test" > test.txt
-            # npm run start-estimator
-            # npm run stop-estimator
+            npm run start-estimator
             # pm2 start build/estimate/execute/main_thread.js
