@@ -35,27 +35,30 @@ export async function GET({ url }: NextRequest) {
     }
     
     try {
-        console.log("Fetching db");
         const transactions: Record<string, any>[] = await prisma.$queryRaw`
             SELECT * FROM get_transactions(${from}::date, ${to}::date, ${addressList})
         `;
-        
+        console.log(transactions.length); //debug
         let dailyEmissionsData: Record<string, Record<string, number>> = {};
-        console.log("Entering loop 1");
         for (const txn of transactions) {
+            const sender = txn.t_from_address;
+            const receiver = txn.t_to_address
             const formattedDate = new Date(txn.t_block_timestamp).toLocaleDateString('en-US');
             
             if (!dailyEmissionsData[formattedDate]) {
                 dailyEmissionsData[formattedDate] = {};
             }
 
-            dailyEmissionsData[formattedDate][txn.t_from_address] = (dailyEmissionsData[formattedDate][txn.t_from_address] || 0) + txn.t_emission_by_transaction;
-            dailyEmissionsData[formattedDate][txn.t_to_address] = (dailyEmissionsData[formattedDate][txn.t_to_address] || 0) + txn.t_emission_by_balance;
+            if (addressList.includes(sender)) {
+                dailyEmissionsData[formattedDate][sender] = (dailyEmissionsData[formattedDate][sender] || 0) + txn.t_emission_by_transaction
+            }
+            
+            if (addressList.includes(receiver)) {
+                dailyEmissionsData[formattedDate][receiver] = (dailyEmissionsData[formattedDate][receiver] || 0) + txn.t_emission_by_balance
+            }
         }
-        console.log("Exit loop 1")
         let result: LineChartData = [];
         
-        console.log("Entering loop 2");
         for (const key_date of Object.keys(dailyEmissionsData)) {
             const addresses = dailyEmissionsData[key_date];
             for (const key_address of Object.keys(addresses)) {
