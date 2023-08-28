@@ -34,7 +34,7 @@ export default function AddressInteractiveTable({ data }: { data: TableData }) {
           <TableRow>
             <TableHead className="w-48"></TableHead>
             <TableHead>Address</TableHead>
-            <TableHead className="text-right">GHG Emission</TableHead>
+            <TableHead className="text-right">GHG Emissions (in kgCO2e)</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
