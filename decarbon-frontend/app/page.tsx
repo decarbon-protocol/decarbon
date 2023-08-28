@@ -59,13 +59,14 @@ export default function Home() {
     from: new Date("2023-08-26"),
     to: new Date("2023-08-28"),
   });
-  const [address, setAddress] = useState('')
+  const [address, setAddress] = useState('');
   const [addressList, setAddressList] = useState([]);
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
   const [bubbleData, setBubbleData] = useState<BubbleChartData>();
   const [walletSelector, setWalletSelector] = useState<WalletSelector>();
   const [account, setAccount] = useState<Account>();
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     fetch(`/api/table`)
@@ -112,6 +113,8 @@ export default function Home() {
 
 // commit by Minh: support individual address query
 const onSubmit = async () => {
+    setIsLoading(true);
+
     const query =
       date?.from && date.to
         ? `?from=${format(date.from, "yyyy-MM-dd")}&to=${format(
@@ -124,15 +127,19 @@ const onSubmit = async () => {
       `address=${encodeURIComponent(address)}`
     ).join("&");
 
-    const response = await fetch(`/api/line${query}&${addressQueryParam}`);
-    const json = await response.json();
-    setLineData(json);
+    try {
+        const response = await fetch(`/api/line${query}&${addressQueryParam}`);
+        const json = await response.json();
+        setLineData(json);
+    } catch (err) {
+        console.error(`page.tsx/onSubmit(): ${err}`);
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   const addAddressToList = (newAddress: never) => {
     setAddressList((prevList) => [...prevList, newAddress]);
-    console.log(addressList);
-    console.log("HIIIIII");
   };
 
   return (
@@ -260,6 +267,7 @@ const onSubmit = async () => {
             </Form>
           </Card>
           <Card className="p-4 w-full">
+            {isLoading ? <div>Loading...</div> : null}
             {date?.from && date.to && lineData && <LineChart data={lineData} />}
           </Card>
         </section>
