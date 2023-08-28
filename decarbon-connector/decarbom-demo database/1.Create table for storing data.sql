@@ -1,0 +1,21 @@
+CREATE TABLE "transactions" (
+  "hash" TEXT PRIMARY KEY,
+  "nonce" BIGINT,
+  "transaction_index" BIGINT,
+  "from_address" TEXT,
+  "to_address" TEXT,
+  "value" NUMERIC(38),
+  "gas" BIGINT,
+  "gas_price" BIGINT,
+  "input" TEXT,
+  "receipt_cumulative_gas_used" BIGINT,
+  "receipt_gas_used" BIGINT,
+  "receipt_contract_address" TEXT,
+  "receipt_root" TEXT,
+  "receipt_status" BIGINT,
+  "block_timestamp" TIMESTAMP,
+  "block_number" BIGINT,
+  "block_hash" TEXT,
+  "emission_by_balance" NUMERIC(38,2),
+  "emission_by_transaction" NUMERIC(38,2)
+);
