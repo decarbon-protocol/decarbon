@@ -49,7 +49,7 @@ export const options: ChartOptions<"line"> = {
     },
     title: {
       display: true,
-      text: "Addresses with GHG emission over time",
+      text: "Addresses with GHG emissions (in kgCO2e) over time",
     },
   },
 };
