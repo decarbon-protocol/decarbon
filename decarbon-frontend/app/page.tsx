@@ -59,6 +59,8 @@ export default function Home() {
     from: new Date("2023-08-26"),
     to: new Date("2023-08-28"),
   });
+  const [address, setAddress] = useState('')
+  const [addressList, setAddressList] = useState([]);
   const [tableData, setTableData] = useState<TableData>();
   const [lineData, setLineData] = useState<LineChartData>();
   const [bubbleData, setBubbleData] = useState<BubbleChartData>();
@@ -94,7 +96,22 @@ export default function Home() {
     });
   }, []);
 
-  const onSubmit = async () => {
+//   const onSubmit = async () => {
+//     const 
+//     const query =
+//       date?.from && date.to
+//         ? `?from=${format(date.from, "yyyy-MM-dd")}&to=${format(
+//             date.to,
+//             "yyyy-MM-dd"
+//           )}`
+//         : "";
+//     const response = await fetch(`/api/line${query}`);
+//     const json: LineChartData = await response.json();
+//     setLineData(json);
+//   };
+
+// commit by Minh: support individual address query
+const onSubmit = async () => {
     const query =
       date?.from && date.to
         ? `?from=${format(date.from, "yyyy-MM-dd")}&to=${format(
@@ -102,9 +119,20 @@ export default function Home() {
             "yyyy-MM-dd"
           )}`
         : "";
-    const response = await fetch(`/api/line${query}`);
-    const json: LineChartData = await response.json();
+
+    const addressQueryParam = addressList.map((address) =>
+      `address=${encodeURIComponent(address)}`
+    ).join("&");
+
+    const response = await fetch(`/api/line${query}&${addressQueryParam}`);
+    const json = await response.json();
     setLineData(json);
+  };
+
+  const addAddressToList = (newAddress: never) => {
+    setAddressList((prevList) => [...prevList, newAddress]);
+    console.log(addressList);
+    console.log("HIIIIII");
   };
 
   return (
@@ -159,14 +187,31 @@ export default function Home() {
                       <FormLabel>Address</FormLabel>
                       <FormControl>
                         <Input
-                          placeholder="0x71C7656EC7ab88b098defB751B7401B5f6d8976F"
-                          {...field}
+                        //     placeholder="0x71c7656ec7ab88b098defb751b7401b5f6d8976f"
+                        //   {...field}
+                        
+                        // commit by Minh: add individual address query
+                        type="text"
+                        placeholder="Enter address"
+                        // {...field}
+                        onChange={(e) => {
+                          field.onChange(e);
+                          setAddress(e.target.value);
+                        }}
                         />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
+                {/* <Button
+                size="default"
+                variant="outline"
+                onClick={() => addAddressToList(form.getValues("address") as never)}
+                >
+                Add Address
+                </Button> */}
+
                 <div className="grid gap-2 ">
                   <Popover>
                     <PopoverTrigger asChild>
@@ -178,6 +223,7 @@ export default function Home() {
                           !date && "text-muted-foreground"
                         )}
                       >
+
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {date?.from ? (
                           date.to ? (
@@ -205,7 +251,9 @@ export default function Home() {
                     </PopoverContent>
                   </Popover>
                 </div>
-                <Button size="icon">
+                <Button size="icon"
+                    onClick={() => addAddressToList(form.getValues("address") as never)}
+                >
                   <SearchIcon></SearchIcon>
                 </Button>
               </form>
