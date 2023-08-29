@@ -21,7 +21,7 @@ import { useEffect, useState } from "react";
 import { BubbleChartData, LineChartData, TableData } from "./types/api.model";
 import AddressInteractiveTable from "./components/address-interactive-table";
 import { format } from "date-fns";
-import { Calendar as CalendarIcon, SearchIcon, WalletIcon } from "lucide-react";
+import { Calendar as CalendarIcon, SearchIcon, WalletIcon, SproutIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 
 import { cn } from "@/lib/utils";
@@ -144,6 +144,13 @@ const onSubmit = async () => {
 
   return (
     <main className="min-h-screen p-4 md:p-8">
+        <SproutIcon className={cn("text-left")}
+    style = {{
+              width: "3%",
+              height: "auto"
+            }}
+        >
+        </SproutIcon>
       <h1 className="text-center text-4xl font-bold mb-4">
         Blockchain Driven Carbon Emissions Dashboard
       </h1>
