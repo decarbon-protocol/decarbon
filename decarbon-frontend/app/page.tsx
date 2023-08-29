@@ -44,6 +44,7 @@ import { setupLedger } from "@near-wallet-selector/ledger";
 import { setupMathWallet } from "@near-wallet-selector/math-wallet";
 import { setupNightly } from "@near-wallet-selector/nightly";
 import BubbleChart from "./components/bubble-chart";
+import Footer from "../components/ui/footer";
 
 const formSchema = z.object({
   address: z.string().min(2).max(50),
@@ -231,6 +232,7 @@ export default function Home() {
           )}
         </section>
       </div>
+      <Footer></Footer>
     </main>
   );
 }
