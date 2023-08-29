@@ -73,9 +73,14 @@ export default function Home() {
       .then((r) => r.json())
       .then((json) => setTableData(json));
 
-    fetch(`/api/line`)
-      .then((r) => r.json())
-      .then((json) => setLineData(json));
+    // fetch(`/api/line`)
+    //   .then((r) => r.json())
+    //   .then((json) => setLineData(json));
+
+    // commit: show demo data on page startup
+    fetch(`/api/api-demo/line`)
+        .then((r) => r.json())
+        .then((json) => setLineData(json));
 
     fetch(`/api/bubble`)
       .then((r) => r.json())
