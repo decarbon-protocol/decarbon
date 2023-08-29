@@ -274,8 +274,12 @@ const onSubmit = async () => {
             </Form>
           </Card>
           <Card className="p-4 w-full">
-            {isLoading ? <div>Loading...</div> : null}
-            {date?.from && date.to && lineData && <LineChart data={lineData} />}
+            {
+                date?.from && date.to && lineData
+                && isLoading
+                ? <div className="text-left font-normal">Loading...</div>
+                :<LineChart data={lineData!} />
+            }
           </Card>
         </section>
         <section className="flex flex-col w-1/2">
