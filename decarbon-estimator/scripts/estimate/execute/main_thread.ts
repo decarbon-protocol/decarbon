@@ -22,16 +22,18 @@ const pid: number = process.pid;
 log(pid, "data/pid");
 
 /**
- * @notice These are the 4 crucial global variables for the main thread to run
+ * @notice These are the 5 crucial global variables for the main thread to run
  * queue: a queue of epochs pending to be finalized
  * worker: a worker thread that runs parallely along this main thread (its duty is to fetch the total Eth supply, avg. network consumption and emissions every of the newest epoch everytime it is created)
  * addressList: a mapping from address to 'Account' object. See 'scripts/interfaces/Account.ts' for more details
  * transactionList: an array of that will be populated with Transaction objects as results from our calculation process. See 'scripts/interfaces/Transaction.ts' for more details
+ * terminate: false by default, but will be set to true when program receives the terminate signal
  */
 const queue: Queue<Epoch> = new Queue<Epoch>();
 const worker: Worker = new Worker("./build/estimate/execute/worker_thread.js");
 let addressList: Set<string> = new Set<string>();
 let transactionList: Transaction[] = [];
+let terminate: boolean = false;
 
 /**
  * 
@@ -79,21 +81,18 @@ worker.on("message", (serializedEpoch: Record<string, unknown>) => {
 /**
  * @notice handle program termination events
  */
-process.on("SIGINT", async () => {
-    console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    output("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");  
-    log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
-    await disconnectDb();
-    process.exit(0);
-
+process.on("SIGINT", () => {
+    terminate = true;
+    output("Received SIGINT signal, stopping all blocks listener...");
+    provider.removeAllListeners("block");
+    output("Waiting for main() to finish whatever job it is doing before stopping completely...");
 })
 
-process.on("SIGTERM", async () => {
-    console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    output("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
-    log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
-    await disconnectDb();
-    process.exit(0);
+process.on("SIGTERM", () => {
+    terminate = true;
+    output("Received SIGINT signal, stopping all blocks listener...");
+    provider.removeAllListeners("block");
+    output("Waiting for main() to finish whatever job it is doing before stopping completely...");
 });
 
 /**
@@ -102,7 +101,7 @@ process.on("SIGTERM", async () => {
 export default async function main()
     : Promise<void> {
     try {
-        while (true) {
+        while (!terminate) {
             if (queue.size() >= 4) {
                 let oldestEpoch: Epoch = queue.front()!;
                 const confirmed: boolean = await confirm_finalization_of_epoch(oldestEpoch);
@@ -172,9 +171,7 @@ export default async function main()
         throw new Error(`main(): ${err}`);
     }
     finally {
-        provider.removeAllListeners("block");
-        // console.log(`Finished processing epoch\n`);
-        output(`Finished processing epoch\n`);
+        output(`main() has finished processing!`);
     }
 }
 
@@ -189,8 +186,15 @@ if (isMainThread) {
     console.log("=================================================================================\n");
 
     main()
-        .then(() => { })
-        .catch(err => async function() {
+        .then(async () => {
+            output("Disconnecting database client...");
+            await disconnectDb();
+            console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+            output("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
+            log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z", logPath);
+            process.exit(0);        
+        })
+        .catch(async (err) => {
             output(err);
             await disconnectDb();
             console.log("Estimator died (X.X ).");
