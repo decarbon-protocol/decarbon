@@ -150,7 +150,7 @@ export default async function main()
                         continue;
                     }
                     // Clear transaction list after saving to db
-                    transactionList.splice(0);
+                    transactionList.splice(0, transactionList.length);
                 }
             }
             else {
