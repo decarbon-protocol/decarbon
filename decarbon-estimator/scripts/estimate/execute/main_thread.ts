@@ -83,15 +83,11 @@ worker.on("message", (serializedEpoch: Record<string, unknown>) => {
  */
 process.on("SIGINT", () => {
     terminate = true;
-    output("Received SIGINT signal, stopping all blocks listener...");
-    provider.removeAllListeners("block");
     output("Waiting for main() to finish whatever job it is doing before stopping completely...");
 })
 
 process.on("SIGTERM", () => {
     terminate = true;
-    output("Received SIGINT signal, stopping all blocks listener...");
-    provider.removeAllListeners("block");
     output("Waiting for main() to finish whatever job it is doing before stopping completely...");
 });
 
@@ -101,7 +97,7 @@ process.on("SIGTERM", () => {
 export default async function main()
     : Promise<void> {
     try {
-        while (!terminate) {
+        while (terminate == false) {
             if (queue.size() >= 4) {
                 let oldestEpoch: Epoch = queue.front()!;
                 const confirmed: boolean = await confirm_finalization_of_epoch(oldestEpoch);
@@ -187,6 +183,8 @@ if (isMainThread) {
 
     main()
         .then(async () => {
+            output("Removing all blocks listeners...");
+            provider.removeAllListeners("block");
             output("Disconnecting database client...");
             await disconnectDb();
             console.log("Estimator decided to take a nap (not sure for how long) (￣o￣) .  z z Z");
@@ -196,6 +194,9 @@ if (isMainThread) {
         })
         .catch(async (err) => {
             output(err);
+            output("Removing all blocks listeners...");
+            provider.removeAllListeners("block");
+            output("Disconnecting database client...");
             await disconnectDb();
             console.log("Estimator died (X.X ).");
             output("Estimator died (X.X ).");
