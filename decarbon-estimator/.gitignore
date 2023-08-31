@@ -5,6 +5,7 @@ typechain-types
 # artifacts
 data/*
 build/*
+nohup.out
 
 # other files
 test.ts

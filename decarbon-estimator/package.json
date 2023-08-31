@@ -6,7 +6,9 @@
         "db:push-to-db": "npx prisma generate",
         "db:migrate": "npx prisma db execute --file ./script.sql",
         "start-estimator": "mkdir -p data/logs && mkdir -p build && npx tsc && npx prisma generate && node build/estimate/execute/main_thread.js &",
-        "stop-estimator": "pkill --signal SIGINT --pidfile data/pid"
+        "start-estimator-vps": "mkdir -p data/logs && mkdir -p build && npx tsc && npx prisma generate && nohup node build/estimate/execute/main_thread.js &",
+        "stop-estimator": "pkill --signal SIGINT --pidfile data/pid",
+        "stop-estimator-force": "pkill --signal SIGKILL --pidfile data/pid"
     },
     "devDependencies": {
         "@types/express": "^4.17.17",
