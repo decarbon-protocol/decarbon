@@ -2,7 +2,7 @@
  * @notice 1 Period = 6.4 minutes
  */
 const DOT_BLOCK_TIME_IN_SECONDS: number = 6;
-const NUM_BLOCKS_IN_PERIOD: number = 64;
+const NUM_BLOCKS_IN_PERIOD: number = 6.4 * 60 / DOT_BLOCK_TIME_IN_SECONDS;
 const NUM_SECONDS_IN_EPOCH: number = DOT_BLOCK_TIME_IN_SECONDS * NUM_BLOCKS_IN_PERIOD;
 const NUM_MINUTES_IN_EPOCH: number = NUM_SECONDS_IN_EPOCH / 60;
 const NUM_EPOCHS_IN_HOUR: number = 60 / NUM_MINUTES_IN_EPOCH;
