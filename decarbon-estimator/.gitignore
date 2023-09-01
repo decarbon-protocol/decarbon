@@ -11,3 +11,4 @@ test.ts
 settings.json
 scripts/archive
 test.json
+.env
