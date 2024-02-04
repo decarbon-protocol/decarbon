@@ -1,6 +1,6 @@
 import { prisma } from ".";
-import { Block } from "../interfaces";
-import { exampleEpoch } from "../interfaces";
+import { Block } from "../../types/blockchain";
+import { exampleEpoch } from "../../types/blockchain";
 import { output } from "../utils";
 
 export default async function insert_blocks(_blockList: Block[])

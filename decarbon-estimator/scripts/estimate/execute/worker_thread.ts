@@ -3,7 +3,7 @@ import { url, apiKey } from "../../aggregate/use_beaconchain_apis";
 import { parentPort } from "worker_threads";
 import { ethers } from "ethers";
 import { provider } from "../../aggregate/use_json_rpc";
-import { Epoch } from "../../interfaces";
+import { Epoch } from "../../../types/blockchain";
 import { get_total_eth_supply_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { constants } from "../../01_constants";
 import { get_avg_emissions_of_epoch } from "../../aggregate/use_ccri_apis";

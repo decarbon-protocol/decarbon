@@ -1,4 +1,4 @@
-import { Epoch, exampleEpoch, Transaction, Block, Account, exampleAccount } from "../../interfaces";
+import { Epoch, exampleEpoch, Transaction, Block, Account, exampleAccount } from "../../../types/blockchain";
 import { get_tx_of_block } from "../../aggregate/use_json_rpc";
 import { hex2Dec, log, output } from "../../utils";
 import { ethers } from "ethers";

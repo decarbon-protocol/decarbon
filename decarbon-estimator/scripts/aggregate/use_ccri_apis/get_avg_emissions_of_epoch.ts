@@ -1,7 +1,7 @@
 import { apiKey, url } from ".";
 import axios, { AxiosResponse } from "axios";
 import { constants } from "../../01_constants";
-import { Epoch, exampleEpoch } from "../../interfaces";
+import { Epoch, exampleEpoch } from "../../../types/blockchain";
 import fs from "fs";
 
 /**

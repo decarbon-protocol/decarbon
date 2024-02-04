@@ -1,5 +1,5 @@
 import { fetch_accounts_from_db, prisma } from ".";
-import { Account } from "../interfaces";
+import { Account } from "../../types/blockchain";
 import { utils } from "ethers";
 import { output } from "../utils";
 

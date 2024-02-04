@@ -1,4 +1,4 @@
-import { Account } from "../interfaces";
+import { Account } from "../../types/blockchain";
 import { PrismaClient } from "@prisma/client";
 import { utils } from "ethers";
 import { prisma } from ".";

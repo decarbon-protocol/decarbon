@@ -1,5 +1,5 @@
 import { provider } from ".";
-import { Block, exampleBlock } from "../../interfaces";
+import { Block, exampleBlock } from "../../../types/blockchain";
 import fs from "fs";
 import axios from "axios";
 import { output } from "../../utils";

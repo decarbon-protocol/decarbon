@@ -1,5 +1,5 @@
 import axios, { AxiosResponse } from "axios";
-import { Epoch, exampleEpoch } from "../../interfaces";
+import { Epoch, exampleEpoch } from "../../../types/blockchain";
 import { url, apiKey } from ".";
 import { log } from "../../utils";
 

@@ -1,5 +1,5 @@
 import { prisma } from ".";
-import { Transaction, exampleTransaction } from "../interfaces";
+import { Transaction, exampleTransaction } from "../../types/blockchain";
 import { log, output } from "../utils";
 import { utils } from "ethers";
 

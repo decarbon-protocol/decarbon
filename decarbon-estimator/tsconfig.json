@@ -12,5 +12,5 @@
     "include": [
         "scripts/",
         "test/"
-    ]
+, "types/blockchain", "types/containers"    ]
 }

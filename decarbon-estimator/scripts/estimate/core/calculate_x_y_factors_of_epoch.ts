@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { Epoch, exampleEpoch } from "../../interfaces";
+import { Epoch, exampleEpoch } from "../../../types/blockchain";
 import { get_total_tx_fee_reward_of_epoch } from "../../aggregate/use_etherscan_apis";
 import { get_total_validator_payout_of_epoch } from "../../aggregate/use_beaconchain_apis";
 import { log, output } from "../../utils";

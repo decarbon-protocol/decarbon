@@ -1,7 +1,7 @@
 import axios, { AxiosError } from 'axios';
 import { get_tx_of_block, url } from ".";
 import { output } from '../../utils';
-import { exampleBlock } from '../../interfaces';
+import { exampleBlock } from '../../../types/blockchain';
 
 export default async function get_tx_from_hashes(transactionHashes: string[])
     : Promise<[Record<string, string | boolean | []>[], Record<string, string | boolean | []>[]] | undefined> {

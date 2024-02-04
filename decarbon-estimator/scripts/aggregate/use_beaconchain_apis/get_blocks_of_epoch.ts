@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
-import { Block, Epoch, exampleEpoch } from "../../interfaces";
+import { Block, Epoch, exampleEpoch } from "../../../types/blockchain";
 import { url, apiKey } from ".";
 import { provider } from "../use_json_rpc";
 import { output } from "../../utils";

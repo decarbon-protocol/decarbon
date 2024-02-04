@@ -1,8 +1,8 @@
 import axios, { AxiosResponse } from "axios";
 import { url, apiKey } from "../../aggregate/use_beaconchain_apis";
 import { provider } from "../../aggregate/use_json_rpc";
-import { Queue } from "../../classes";
-import { Epoch, exampleEpoch, Transaction, Account } from "../../interfaces";
+import { Queue } from "../../../types/containers";
+import { Epoch, exampleEpoch, Transaction, Account } from "../../../types/blockchain";
 import { calculate_emissions_of_transactions_in_epoch } from "../core";
 import { fetch_accounts_from_db, insert_transactions, update_account_data } from "../../database";
 import { Worker, isMainThread } from "worker_threads";
